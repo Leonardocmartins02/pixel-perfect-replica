@@ -1,8 +1,16 @@
+# Fim de linha LF no repositório e no disco, em Windows, WSL e Lovable.
 * text=auto eol=lf
+
+# Binários: nunca converter.
 *.png binary
 *.jpg binary
 *.jpeg binary
+*.gif binary
 *.webp binary
+*.avif binary
 *.ico binary
+*.woff binary
 *.woff2 binary
 *.mp4 binary
+*.webm binary
+*.pdf binary
