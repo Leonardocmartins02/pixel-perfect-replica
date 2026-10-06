@@ -5,6 +5,18 @@ import { AdvertorialPage } from "@/components/advertorial/AdvertorialPage";
 import { ErrorScreen, NotFoundScreen } from "@/components/ErrorScreens";
 import { flotador } from "@/content/flotador";
 
+/** Aperta Tab até o foco voltar ao body ou repetir; devolve os elementos visitados, em ordem. */
+async function tabThroughPage(user: ReturnType<typeof userEvent.setup>) {
+  const visited: Element[] = [];
+  for (let i = 0; i < 200; i++) {
+    await user.tab();
+    const active = document.activeElement;
+    if (!active || active === document.body || visited.includes(active)) break;
+    visited.push(active);
+  }
+  return visited;
+}
+
 describe("telas de erro", () => {
   it("página não encontrada está em português", () => {
     render(<NotFoundScreen />);
@@ -13,13 +25,14 @@ describe("telas de erro", () => {
     expect(screen.queryByText(/not found|go home/i)).toBeNull();
   });
 
-  it("tela de erro está em português e permite tentar novamente pelo teclado", async () => {
+  it("tela de erro está em português e 'Tentar novamente' funciona pelo teclado", async () => {
     const user = userEvent.setup();
     let retries = 0;
     render(<ErrorScreen onRetry={() => retries++} />);
     expect(
       screen.getByRole("heading", { level: 1, name: "Esta página não carregou" }),
     ).toBeVisible();
+    expect(screen.queryByText(/try again|go home/i)).toBeNull();
 
     await user.tab();
     expect(screen.getByRole("button", { name: "Tentar novamente" })).toHaveFocus();
@@ -29,7 +42,7 @@ describe("telas de erro", () => {
 });
 
 describe("navegação por teclado", () => {
-  it("o primeiro Tab vai para 'Pular para o conteúdo' e o link leva ao <main>", async () => {
+  it("o primeiro Tab vai para 'Pular para o conteúdo', que aponta para o <main>", async () => {
     const user = userEvent.setup();
     const { container } = render(<AdvertorialPage config={flotador} />);
 
@@ -41,26 +54,20 @@ describe("navegação por teclado", () => {
     );
   });
 
-  it("Tab percorre a página inteira, em ordem, até o último controle antes do rodapé", async () => {
+  it("Tab percorre a página na ordem do DOM até o último controle", async () => {
     const user = userEvent.setup();
     render(<AdvertorialPage config={flotador} />);
 
-    const visited: Element[] = [];
-    for (let i = 0; i < 200; i++) {
-      await user.tab();
-      const active = document.activeElement!;
-      if (active === document.body || visited.includes(active)) break;
-      visited.push(active);
-    }
+    const visited = await tabThroughPage(user);
 
-    // Ordem do Tab segue a ordem do DOM (nenhum tabindex positivo desvia o foco).
-    for (let i = 1; i < visited.length; i++) {
+    // Nenhum tabindex positivo desvia o foco da ordem de leitura.
+    visited.slice(1).forEach((el, i) => {
       expect(
-        visited[i - 1]!.compareDocumentPosition(visited[i]!) & Node.DOCUMENT_POSITION_FOLLOWING,
+        visited[i]!.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
-    }
+    });
     expect(visited[0]).toHaveTextContent("Pular para o conteúdo");
-    // O rodapé só tem texto, então o último tab stop é o CTA de encerramento.
+    // O rodapé só tem texto; o último controle da página é o CTA do encerramento.
     expect(visited.at(-1)).toHaveTextContent("Ver proposta de compra");
   });
 
