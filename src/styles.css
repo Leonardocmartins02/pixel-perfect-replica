@@ -201,3 +201,35 @@
   position: absolute; left: 1rem; top: -4rem; z-index: 50; padding: 0.5rem 1rem; background: var(--color-primary); color: var(--color-primary-foreground); border-radius: var(--radius);
   &:focus { top: 1rem; }
 }
+
+@utility link-ghost {
+  display: inline-flex; align-items: center; min-height: 48px; padding: 0.75rem 1.5rem; border-radius: 999px;
+  border: 1px solid var(--color-border); font-weight: 600; background: var(--color-card);
+  transition: background-color 150ms;
+  &:hover { background: var(--color-accent); }
+}
+@utility hero-card {
+  width: 100%; max-width: 72rem; margin-inline: auto; display: grid; overflow: hidden;
+  border: 1px solid var(--color-border); border-radius: calc(var(--radius) + 8px); background: var(--color-card);
+  @media (min-width: 900px) { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-inline: 1.25rem; }
+  @media (min-width: 1344px) { margin-inline: auto; }
+}
+@utility hero-copy { padding: 2rem 1.25rem; display: flex; flex-direction: column; justify-content: center; @media (min-width: 900px) { padding: 3rem 2.5rem; } }
+@utility hero-stage {
+  position: relative; min-height: 22rem; overflow: hidden; padding: 1.25rem; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 30% 20%, var(--color-accent), var(--color-tint) 70%);
+  @media (min-width: 900px) { min-height: 32rem; margin: 0.5rem; border-radius: calc(var(--radius) + 4px); }
+}
+@utility hero-floaters { position: absolute; inset: 0; pointer-events: none; }
+@utility hero-floater {
+  position: absolute; border-radius: 50%; background: color-mix(in oklch, var(--color-primary) 35%, white);
+  opacity: 0.55; animation: hero-drift 7s ease-in-out infinite;
+}
+@utility hero-product { position: relative; width: min(100%, 24rem); animation: hero-bob 6s ease-in-out infinite; }
+@utility hero-product-img { width: 100%; height: auto; object-fit: contain; }
+@utility hero-mini {
+  position: absolute; right: 1rem; bottom: 1rem; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem;
+  background: var(--color-card); border-radius: var(--radius); box-shadow: 0 6px 24px rgb(0 0 0 / 0.08);
+}
+@keyframes hero-drift { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(8px, -14px, 0); } }
+@keyframes hero-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
