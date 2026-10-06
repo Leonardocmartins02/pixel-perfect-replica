@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react";
 import type { FlotadorConfig } from "@/content/flotador";
 import { formatBRL, isValidCents } from "@/lib/offer";
 import { HeroCarousel } from "./HeroCarousel";
@@ -10,55 +11,85 @@ export function DraftBanner({ config }: P) {
   return <div className="draft-banner">Prévia interna — conteúdo em validação</div>;
 }
 
-export function SiteHeader() {
-  return (
-    <header className="border-b border-border">
-      <div className="container-hero flex items-center justify-between gap-4 py-4">
-        <span className="font-display text-lg font-semibold">
-          Flotador Perol · proposta por caixa
-        </span>
-        <span className="ad-label">Publicidade</span>
-      </div>
-    </header>
-  );
-}
+/** Atalhos do topo do hero; só apontam para seções que existem na página. */
+const NAV_LINKS = [
+  { href: "#produto", label: "O produto" },
+  { href: "#demonstracao", label: "Demonstração" },
+  { href: "#oferta", label: "Proposta por caixa" },
+  { href: "#perguntas", label: "Dúvidas" },
+];
 
+/**
+ * Hero no layout da referência: um cartão único com marca e navegação no topo
+ * da coluna de texto, título ancorado embaixo e o palco do produto à direita,
+ * com o selo de publicidade no lugar dos botões de busca/carrinho.
+ */
 export function Hero({ config }: P) {
   const { editorial, media, product, offer } = config;
   const price = isValidCents(offer.boxPriceCents) ? formatBRL(offer.boxPriceCents) : null;
+  const thumb = media.heroImages[0] ?? null;
   return (
-    <section aria-labelledby="titulo" className="section pt-6 md:pt-10">
-      <div className="container-hero">
-        <div className="hero-card">
-          <div className="hero-copy">
-            <p className="eyebrow">Conteúdo publicitário</p>
-            <h1 id="titulo" className="display-title">
+    <section aria-labelledby="titulo" className="hero-section">
+      <div className="hero-card">
+        <div className="hero-copy">
+          <div className="hero-top hero-enter">
+            <p className="hero-brand">{product.workingName}</p>
+            <nav aria-label="Seções da página">
+              <ul className="hero-nav">
+                {NAV_LINKS.map((l) => (
+                  <li key={l.href}>
+                    <a href={l.href}>{l.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+          <div className="hero-text">
+            <h1
+              id="titulo"
+              className="hero-title hero-enter"
+              style={{ ["--enter-delay" as string]: "100ms" }}
+            >
               {editorial.h1}
             </h1>
-            <p className="lead mt-5">{editorial.intro}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <p className="hero-lead hero-enter" style={{ ["--enter-delay" as string]: "200ms" }}>
+              {editorial.intro}
+            </p>
+            <div
+              className="hero-enter mt-7 flex flex-wrap gap-2.5"
+              style={{ ["--enter-delay" as string]: "300ms" }}
+            >
               <a href="#oferta" className="link-cta">
                 Ver proposta de compra
+                <ArrowUpRight aria-hidden="true" size={16} />
               </a>
               <a href="#produto" className="link-ghost">
                 Conhecer o produto
+                <ArrowUpRight aria-hidden="true" size={16} />
               </a>
             </div>
           </div>
-          <HeroCarousel images={media.heroImages}>
-            <div className="hero-mini">
-              <div>
-                <p className="text-sm font-semibold">{product.workingName}</p>
-                <p className="text-xs text-muted-foreground">Venda por caixa</p>
-              </div>
+        </div>
+        <HeroCarousel images={media.heroImages}>
+          <span className="hero-pill hero-ad">Publicidade</span>
+          <div className="hero-mini">
+            <div className="hero-mini-thumb" aria-hidden="true">
+              {thumb ? <img src={thumb.src} alt="" /> : <span className="pending-tag">Foto</span>}
+            </div>
+            <div className="hero-mini-info">
+              <p className="text-sm font-semibold leading-tight">{product.workingName}</p>
+              <p className="text-xs text-muted-foreground">Venda por caixa</p>
               {price ? (
-                <p className="text-sm font-semibold">{price}</p>
+                <p className="mt-2 text-sm font-semibold">{price}</p>
               ) : (
-                <p className="pending-tag text-pending-foreground">Preço pendente</p>
+                <p className="pending-tag mt-2 text-pending-foreground">Preço pendente</p>
               )}
             </div>
-          </HeroCarousel>
-        </div>
+            <a href="#oferta" className="hero-mini-go" aria-label="Ir para a proposta de compra">
+              <ArrowUpRight aria-hidden="true" size={20} />
+            </a>
+          </div>
+        </HeroCarousel>
       </div>
     </section>
   );
