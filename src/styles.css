@@ -90,6 +90,13 @@
   --pending: oklch(0.95 0.05 85);
   --pending-foreground: oklch(0.4 0.08 70);
   --tint: oklch(0.96 0.012 200);
+  /* Palco do hero: tons de fundo e partículas, em rodízio a cada foto. */
+  --hero-tone-1: oklch(0.92 0.04 200);
+  --hero-tone-2: oklch(0.93 0.05 80);
+  --hero-tone-3: oklch(0.92 0.04 255);
+  --hero-particle-1: oklch(0.7 0.07 200);
+  --hero-particle-2: oklch(0.75 0.09 75);
+  --hero-particle-3: oklch(0.7 0.07 255);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -216,17 +223,57 @@
 }
 @utility hero-copy { padding: 2rem 1.25rem; display: flex; flex-direction: column; justify-content: center; @media (min-width: 900px) { padding: 3rem 2.5rem; } }
 @utility hero-stage {
-  position: relative; min-height: 22rem; overflow: hidden; padding: 1.25rem 1.25rem 6rem; display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(circle at 30% 20%, var(--color-accent), var(--color-tint) 70%);
-  @media (min-width: 900px) { min-height: 32rem; padding-bottom: 1.25rem; margin: 0.5rem; border-radius: calc(var(--radius) + 4px); }
+  position: relative; min-height: 26rem; overflow: hidden; background: var(--color-tint);
+  &[data-tone="1"] { --hero-particle: var(--hero-particle-1); }
+  &[data-tone="2"] { --hero-particle: var(--hero-particle-2); }
+  &[data-tone="3"] { --hero-particle: var(--hero-particle-3); }
+  @media (min-width: 900px) { min-height: 32rem; margin: 0.5rem; border-radius: calc(var(--radius) + 4px); }
 }
+/* Fundos empilhados: só o da foto atual fica visível, com fade entre eles. */
+@utility hero-bg { position: absolute; inset: 0; opacity: 0; transition: opacity 800ms ease; &[data-active="true"] { opacity: 1; } }
+@utility hero-bg-1 { background: radial-gradient(circle at 30% 20%, var(--color-card), var(--hero-tone-1) 70%); }
+@utility hero-bg-2 { background: radial-gradient(circle at 30% 20%, var(--color-card), var(--hero-tone-2) 70%); }
+@utility hero-bg-3 { background: radial-gradient(circle at 30% 20%, var(--color-card), var(--hero-tone-3) 70%); }
 @utility hero-floaters { position: absolute; inset: 0; pointer-events: none; }
 @utility hero-floater {
-  position: absolute; border-radius: 50%; background: color-mix(in oklch, var(--color-primary) 35%, white);
-  opacity: 0.55; animation: hero-drift 7s ease-in-out infinite;
+  position: absolute; border-radius: 50%; background: var(--hero-particle, var(--hero-particle-1));
+  opacity: 0.6; animation: hero-drift 7s ease-in-out infinite; transition: background-color 800ms ease;
 }
-@utility hero-product { position: relative; width: min(100%, 24rem); animation: hero-bob 6s ease-in-out infinite; }
-@utility hero-product-img { width: 100%; height: auto; object-fit: contain; }
+/* Troca de foto como na referência: a que sai encolhe e desce; a próxima cresce no lugar. */
+@utility hero-slide {
+  position: absolute; inset: 4rem 1.25rem 6rem; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transform: translateY(18%) scale(0.55); pointer-events: none;
+  transition: opacity 600ms ease, transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  &[data-active="true"] { opacity: 1; transform: none; pointer-events: auto; }
+  @media (min-width: 900px) { inset: 4.5rem 1.5rem 5.5rem; }
+}
+/* Ocupa a altura do slide para a foto caber inteira, seja deitada ou em pé (galão). */
+@utility hero-product {
+  position: relative; width: min(100%, 24rem); height: 100%; display: flex; align-items: center; justify-content: center;
+  animation: hero-bob 6s ease-in-out infinite;
+}
+@utility hero-product-img {
+  max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;
+  border-radius: var(--radius); box-shadow: 0 18px 40px rgb(0 0 0 / 0.12);
+}
+@utility hero-controls {
+  position: absolute; top: 1rem; left: 1rem; display: flex; align-items: center; gap: 0.125rem; padding: 0.25rem;
+  border-radius: 999px; background: color-mix(in oklch, var(--color-card) 80%, transparent); backdrop-filter: blur(6px);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.06);
+}
+@utility hero-control {
+  display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 999px; color: var(--color-foreground);
+  transition: background-color 150ms;
+  &:hover { background: var(--color-card); }
+}
+@utility hero-dot {
+  position: relative; width: 24px; height: 40px;
+  &::before {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 999px;
+    background: var(--color-muted-foreground); opacity: 0.45; transition: width 300ms, margin 300ms, opacity 300ms;
+  }
+  &[aria-current="true"]::before { width: 18px; margin-left: -9px; opacity: 1; background: var(--color-foreground); }
+}
 @utility hero-mini {
   position: absolute; right: 1rem; bottom: 1rem; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem;
   background: var(--color-card); border-radius: var(--radius); box-shadow: 0 6px 24px rgb(0 0 0 / 0.08);

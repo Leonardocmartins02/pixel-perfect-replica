@@ -31,8 +31,9 @@ describe("AdvertorialPage", () => {
     const hero = screen.getByRole("region", { name: flotador.editorial.h1 });
     expect(hero).toHaveTextContent("Preço pendente");
     expect(hero).not.toHaveTextContent("R$");
+    expect(hero.querySelector("img")).toBeNull();
     expect(
-      screen.getByRole("img", { name: "Imagem real e autorizada do Flotador Perol" }),
+      screen.getByRole("img", { name: "Foto 1 do Flotador Perol (imagem real e autorizada)" }),
     ).toBeInTheDocument();
   });
 });

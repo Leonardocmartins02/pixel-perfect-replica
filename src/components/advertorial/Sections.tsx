@@ -1,5 +1,6 @@
 import type { FlotadorConfig } from "@/content/flotador";
 import { formatBRL, isValidCents } from "@/lib/offer";
+import { HeroCarousel } from "./HeroCarousel";
 import { MediaPlaceholder, Pending } from "./Pending";
 
 type P = { config: FlotadorConfig };
@@ -21,16 +22,6 @@ export function SiteHeader() {
     </header>
   );
 }
-
-/** Partículas decorativas do palco do hero (posição, tamanho em px e defasagem da animação). */
-const FLOATERS = [
-  { left: "8%", top: "14%", size: 14, delay: "0s" },
-  { left: "82%", top: "10%", size: 22, delay: "-2s" },
-  { left: "90%", top: "46%", size: 10, delay: "-4s" },
-  { left: "12%", top: "60%", size: 18, delay: "-1s" },
-  { left: "70%", top: "78%", size: 12, delay: "-3s" },
-  { left: "30%", top: "88%", size: 16, delay: "-5s" },
-];
 
 export function Hero({ config }: P) {
   const { editorial, media, product, offer } = config;
@@ -54,36 +45,7 @@ export function Hero({ config }: P) {
               </a>
             </div>
           </div>
-          <div className="hero-stage">
-            <div aria-hidden="true" className="hero-floaters">
-              {FLOATERS.map((f) => (
-                <span
-                  key={f.left + f.top}
-                  className="hero-floater"
-                  style={{
-                    left: f.left,
-                    top: f.top,
-                    width: f.size,
-                    height: f.size,
-                    animationDelay: f.delay,
-                  }}
-                />
-              ))}
-            </div>
-            <div className="hero-product">
-              {media.heroImage ? (
-                <img
-                  src={media.heroImage.src}
-                  alt={media.heroImage.alt}
-                  className="hero-product-img"
-                />
-              ) : (
-                <MediaPlaceholder
-                  label="Imagem real e autorizada do Flotador Perol"
-                  ratio="4 / 3"
-                />
-              )}
-            </div>
+          <HeroCarousel images={media.heroImages}>
             <div className="hero-mini">
               <div>
                 <p className="text-sm font-semibold">{product.workingName}</p>
@@ -95,7 +57,7 @@ export function Hero({ config }: P) {
                 <p className="pending-tag text-pending-foreground">Preço pendente</p>
               )}
             </div>
-          </div>
+          </HeroCarousel>
         </div>
       </div>
     </section>
