@@ -35,7 +35,7 @@ export interface MediaAsset {
 }
 
 export interface DemoMaterials {
-  heroImage: MediaAsset | null;
+  heroImages: MediaAsset[]; // fotos do palco do hero, em rodízio; vazia = "Pendente"
   demonstration: MediaAsset | null;
 }
 
@@ -92,7 +92,7 @@ export const flotador: FlotadorConfig = {
       "A proposta é simples: o Flotador Perol, vendido por caixa. Os detalhes da caixa e as condições de compra serão apresentados aqui assim que forem confirmados.",
   },
   media: {
-    heroImage: null,
+    heroImages: [],
     demonstration: null,
   },
   offer: {

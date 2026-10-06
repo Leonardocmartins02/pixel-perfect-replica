@@ -1,4 +1,6 @@
 import type { FlotadorConfig } from "@/content/flotador";
+import { formatBRL, isValidCents } from "@/lib/offer";
+import { HeroCarousel } from "./HeroCarousel";
 import { MediaPlaceholder, Pending } from "./Pending";
 
 type P = { config: FlotadorConfig };
@@ -11,7 +13,7 @@ export function DraftBanner({ config }: P) {
 export function SiteHeader() {
   return (
     <header className="border-b border-border">
-      <div className="container-read flex items-center justify-between gap-4 py-4">
+      <div className="container-hero flex items-center justify-between gap-4 py-4">
         <span className="font-display text-lg font-semibold">
           Flotador Perol · proposta por caixa
         </span>
@@ -22,30 +24,41 @@ export function SiteHeader() {
 }
 
 export function Hero({ config }: P) {
-  const { editorial, media } = config;
+  const { editorial, media, product, offer } = config;
+  const price = isValidCents(offer.boxPriceCents) ? formatBRL(offer.boxPriceCents) : null;
   return (
-    <section aria-labelledby="titulo" className="section pt-10">
-      <div className="container-read">
-        <p className="eyebrow">Conteúdo publicitário</p>
-        <h1 id="titulo" className="display-title">
-          {editorial.h1}
-        </h1>
-        <p className="lead mt-5">{editorial.intro}</p>
-        <a href="#oferta" className="link-cta mt-6">
-          Ver proposta de compra
-        </a>
-      </div>
-      <div className="container-wide mt-10">
-        {media.heroImage ? (
-          <img
-            src={media.heroImage.src}
-            alt={media.heroImage.alt}
-            className="w-full rounded-lg"
-            style={{ aspectRatio: "16 / 9", objectFit: "cover" }}
-          />
-        ) : (
-          <MediaPlaceholder label="Imagem real e autorizada do Flotador Perol" ratio="16 / 9" />
-        )}
+    <section aria-labelledby="titulo" className="section pt-6 md:pt-10">
+      <div className="container-hero">
+        <div className="hero-card">
+          <div className="hero-copy">
+            <p className="eyebrow">Conteúdo publicitário</p>
+            <h1 id="titulo" className="display-title">
+              {editorial.h1}
+            </h1>
+            <p className="lead mt-5">{editorial.intro}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="#oferta" className="link-cta">
+                Ver proposta de compra
+              </a>
+              <a href="#produto" className="link-ghost">
+                Conhecer o produto
+              </a>
+            </div>
+          </div>
+          <HeroCarousel images={media.heroImages}>
+            <div className="hero-mini">
+              <div>
+                <p className="text-sm font-semibold">{product.workingName}</p>
+                <p className="text-xs text-muted-foreground">Venda por caixa</p>
+              </div>
+              {price ? (
+                <p className="text-sm font-semibold">{price}</p>
+              ) : (
+                <p className="pending-tag text-pending-foreground">Preço pendente</p>
+              )}
+            </div>
+          </HeroCarousel>
+        </div>
       </div>
     </section>
   );
