@@ -25,4 +25,14 @@ describe("AdvertorialPage", () => {
     expect(screen.getByTestId("box-price")).not.toHaveTextContent("R$");
     expect(screen.getByText("Prévia interna — conteúdo em validação")).toBeInTheDocument();
   });
+
+  it("hero não mostra preço nem foto sem aprovação", () => {
+    render(<AdvertorialPage config={flotador} />);
+    const hero = screen.getByRole("region", { name: flotador.editorial.h1 });
+    expect(hero).toHaveTextContent("Preço pendente");
+    expect(hero).not.toHaveTextContent("R$");
+    expect(
+      screen.getByRole("img", { name: "Imagem real e autorizada do Flotador Perol" }),
+    ).toBeInTheDocument();
+  });
 });

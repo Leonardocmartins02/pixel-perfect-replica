@@ -157,12 +157,13 @@
   :focus-visible { outline: 3px solid var(--color-ring); outline-offset: 3px; border-radius: 2px; }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
 }
 
 @utility container-read { width: 100%; max-width: 42rem; margin-inline: auto; padding-inline: 1.25rem; }
 @utility container-wide { width: 100%; max-width: 60rem; margin-inline: auto; padding-inline: 1.25rem; }
+@utility container-hero { width: 100%; max-width: 72rem; margin-inline: auto; padding-inline: 1.25rem; }
 @utility section { padding-block: 3rem; scroll-margin-top: 1rem; @media (min-width: 768px) { padding-block: 4.5rem; } }
 @utility section-tint { background: var(--color-tint); }
 @utility font-display { font-family: var(--font-display); }
@@ -202,23 +203,22 @@
   &:focus { top: 1rem; }
 }
 
+/* Hero em duas colunas (referência: landing de e-commerce com palco do produto). */
 @utility link-ghost {
-  display: inline-flex; align-items: center; min-height: 48px; padding: 0.75rem 1.5rem; border-radius: 999px;
-  border: 1px solid var(--color-border); font-weight: 600; background: var(--color-card);
+  display: inline-flex; align-items: center; min-height: 48px; padding: 0.75rem 1.5rem; border-radius: var(--radius);
+  border: 1px solid var(--color-border); background: var(--color-card); font-weight: 600;
   transition: background-color 150ms;
   &:hover { background: var(--color-accent); }
 }
 @utility hero-card {
-  width: 100%; max-width: 72rem; margin-inline: auto; display: grid; overflow: hidden;
-  border: 1px solid var(--color-border); border-radius: calc(var(--radius) + 8px); background: var(--color-card);
-  @media (min-width: 900px) { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-inline: 1.25rem; }
-  @media (min-width: 1344px) { margin-inline: auto; }
+  display: grid; overflow: hidden; border: 1px solid var(--color-border); border-radius: calc(var(--radius) + 8px); background: var(--color-card);
+  @media (min-width: 900px) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
 @utility hero-copy { padding: 2rem 1.25rem; display: flex; flex-direction: column; justify-content: center; @media (min-width: 900px) { padding: 3rem 2.5rem; } }
 @utility hero-stage {
-  position: relative; min-height: 22rem; overflow: hidden; padding: 1.25rem; display: flex; align-items: center; justify-content: center;
+  position: relative; min-height: 22rem; overflow: hidden; padding: 1.25rem 1.25rem 6rem; display: flex; align-items: center; justify-content: center;
   background: radial-gradient(circle at 30% 20%, var(--color-accent), var(--color-tint) 70%);
-  @media (min-width: 900px) { min-height: 32rem; margin: 0.5rem; border-radius: calc(var(--radius) + 4px); }
+  @media (min-width: 900px) { min-height: 32rem; padding-bottom: 1.25rem; margin: 0.5rem; border-radius: calc(var(--radius) + 4px); }
 }
 @utility hero-floaters { position: absolute; inset: 0; pointer-events: none; }
 @utility hero-floater {
