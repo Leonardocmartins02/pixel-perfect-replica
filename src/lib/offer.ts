@@ -15,7 +15,10 @@ export function formatBRL(cents: number): string {
 }
 
 /** Equivalente por unidade, em centavos (arredondado). null se dados inválidos. */
-export function unitPriceCents(boxPriceCents: number | null, unitsPerBox: number | null): number | null {
+export function unitPriceCents(
+  boxPriceCents: number | null,
+  unitsPerBox: number | null,
+): number | null {
   if (!isValidCents(boxPriceCents) || !isValidQuantity(unitsPerBox)) return null;
   return Math.round(boxPriceCents / unitsPerBox);
 }
@@ -38,8 +41,10 @@ export interface OfferReadiness {
 export function getOfferReadiness(config: FlotadorConfig): OfferReadiness {
   const missing: string[] = [];
   const { offer, product } = config;
-  if (config.status !== "approved" || !offer.commercialApproval) missing.push("Aprovação comercial");
-  if (!product.sku || !product.volumePerPackage) missing.push("Apresentação do produto (SKU e volume)");
+  if (config.status !== "approved" || !offer.commercialApproval)
+    missing.push("Aprovação comercial");
+  if (!product.sku || !product.volumePerPackage)
+    missing.push("Apresentação do produto (SKU e volume)");
   if (!isValidQuantity(product.unitsPerBox)) missing.push("Quantidade de unidades por caixa");
   if (!isValidCents(offer.boxPriceCents)) missing.push("Preço da caixa");
   if (!isApprovedHttpsUrl(offer.purchaseUrl, offer.purchaseUrlApproved))

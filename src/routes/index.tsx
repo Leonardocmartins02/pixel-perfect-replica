@@ -3,7 +3,8 @@ import { AdvertorialPage } from "@/components/advertorial/AdvertorialPage";
 import { flotador } from "@/content/flotador";
 
 const title = "Flotador Perol — proposta de compra por caixa";
-const description = "Conheça o Flotador Perol e a proposta de compra por caixa. Prévia em validação.";
+const description =
+  "Conheça o Flotador Perol e a proposta de compra por caixa. Prévia em validação.";
 
 export const Route = createFileRoute("/")({
   head: () => ({

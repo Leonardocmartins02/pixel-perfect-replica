@@ -7,7 +7,13 @@ const ready = (): FlotadorConfig => ({
   ...flotador,
   status: "approved",
   product: { ...flotador.product, sku: "TESTE-SKU", volumePerPackage: "1 L", unitsPerBox: 12 },
-  offer: { ...flotador.offer, boxPriceCents: 12000, purchaseUrl: "https://exemplo.test/c", purchaseUrlApproved: true, commercialApproval: true },
+  offer: {
+    ...flotador.offer,
+    boxPriceCents: 12000,
+    purchaseUrl: "https://exemplo.test/c",
+    purchaseUrlApproved: true,
+    commercialApproval: true,
+  },
 });
 
 describe("configuração inicial", () => {
@@ -28,27 +34,33 @@ describe("getOfferReadiness", () => {
     expect(getOfferReadiness(ready()).enabled).toBe(true);
   });
   it("exige aprovação comercial", () => {
-    const c = ready(); c.offer.commercialApproval = false;
+    const c = ready();
+    c.offer.commercialApproval = false;
     expect(getOfferReadiness(c).enabled).toBe(false);
   });
   it("exige apresentação do produto", () => {
-    const c = ready(); c.product.sku = null;
+    const c = ready();
+    c.product.sku = null;
     expect(getOfferReadiness(c).enabled).toBe(false);
   });
   it("rejeita quantidade zero", () => {
-    const c = ready(); c.product.unitsPerBox = 0;
+    const c = ready();
+    c.product.unitsPerBox = 0;
     expect(getOfferReadiness(c).enabled).toBe(false);
   });
   it("rejeita preço zero", () => {
-    const c = ready(); c.offer.boxPriceCents = 0;
+    const c = ready();
+    c.offer.boxPriceCents = 0;
     expect(getOfferReadiness(c).enabled).toBe(false);
   });
   it("rejeita URL http", () => {
-    const c = ready(); c.offer.purchaseUrl = "http://exemplo.test/c";
+    const c = ready();
+    c.offer.purchaseUrl = "http://exemplo.test/c";
     expect(getOfferReadiness(c).enabled).toBe(false);
   });
   it("rejeita URL não aprovada", () => {
-    const c = ready(); c.offer.purchaseUrlApproved = false;
+    const c = ready();
+    c.offer.purchaseUrlApproved = false;
     expect(getOfferReadiness(c).enabled).toBe(false);
   });
 });

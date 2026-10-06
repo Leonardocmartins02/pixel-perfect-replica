@@ -1,12 +1,21 @@
 import type { FlotadorConfig } from "@/content/flotador";
-import { BuyerContext, Demonstration, DraftBanner, Hero, ProductSection, SiteHeader } from "./Sections";
+import {
+  BuyerContext,
+  Demonstration,
+  DraftBanner,
+  Hero,
+  ProductSection,
+  SiteHeader,
+} from "./Sections";
 import { OfferSection } from "./OfferSection";
 import { Closing, Faq, SiteFooter } from "./FaqAndFooter";
 
 export function AdvertorialPage({ config }: { config: FlotadorConfig }) {
   return (
     <>
-      <a href="#conteudo" className="skip-link">Pular para o conteúdo</a>
+      <a href="#conteudo" className="skip-link">
+        Pular para o conteúdo
+      </a>
       <DraftBanner config={config} />
       <SiteHeader />
       <main id="conteudo">
