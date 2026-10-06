@@ -59,29 +59,37 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-pending: var(--pending);
+  --color-pending-foreground: var(--pending-foreground);
+  --color-tint: var(--tint);
+  --font-display: "Newsreader", Georgia, serif;
+  --font-sans: "Public Sans", system-ui, sans-serif;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.006 85);
+  --foreground: oklch(0.22 0.02 250);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.22 0.02 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.22 0.02 250);
+  --primary: oklch(0.42 0.08 200);
+  --primary-foreground: oklch(0.99 0.005 85);
+  --secondary: oklch(0.95 0.01 85);
+  --secondary-foreground: oklch(0.22 0.02 250);
+  --muted: oklch(0.95 0.01 85);
+  --muted-foreground: oklch(0.47 0.02 250);
+  --accent: oklch(0.95 0.02 200);
+  --accent-foreground: oklch(0.3 0.06 200);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --border: oklch(0.89 0.012 85);
+  --input: oklch(0.89 0.012 85);
+  --ring: oklch(0.42 0.08 200);
+  --pending: oklch(0.95 0.05 85);
+  --pending-foreground: oklch(0.4 0.08 70);
+  --tint: oklch(0.96 0.012 200);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -141,4 +149,55 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font-sans); line-height: 1.6; overflow-x: hidden; }
+  :focus-visible { outline: 3px solid var(--color-ring); outline-offset: 3px; border-radius: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+}
+
+@utility container-read { width: 100%; max-width: 42rem; margin-inline: auto; padding-inline: 1.25rem; }
+@utility container-wide { width: 100%; max-width: 60rem; margin-inline: auto; padding-inline: 1.25rem; }
+@utility section { padding-block: 3rem; scroll-margin-top: 1rem; @media (min-width: 768px) { padding-block: 4.5rem; } }
+@utility section-tint { background: var(--color-tint); }
+@utility font-display { font-family: var(--font-display); }
+@utility eyebrow { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: var(--color-muted-foreground); }
+@utility display-title { font-family: var(--font-display); font-weight: 600; font-size: clamp(2rem, 6vw, 3.25rem); line-height: 1.1; letter-spacing: -0.015em; margin-top: 0.75rem; text-wrap: balance; }
+@utility lead { font-size: 1.125rem; color: var(--color-muted-foreground); }
+@utility section-title { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.5rem, 4vw, 2rem); line-height: 1.2; margin-bottom: 1rem; }
+@utility sub-title { font-weight: 600; font-size: 1.05rem; }
+@utility prose-body { font-size: 1.0625rem; }
+@utility link-cta {
+  display: inline-flex; align-items: center; min-height: 48px; padding: 0.75rem 1.5rem;
+  background: var(--color-primary); color: var(--color-primary-foreground); font-weight: 600; border-radius: var(--radius);
+  transition: background-color 150ms;
+  &:hover { background: color-mix(in oklch, var(--color-primary) 85%, black); }
+}
+@utility cta-disabled {
+  display: inline-flex; align-items: center; min-height: 48px; padding: 0.75rem 1.5rem; border-radius: var(--radius);
+  background: var(--color-muted); color: var(--color-muted-foreground); font-weight: 600; border: 1px dashed var(--color-border); cursor: not-allowed;
+}
+@utility ad-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.25rem 0.5rem; border: 1px solid var(--color-border); border-radius: 999px; color: var(--color-muted-foreground); white-space: nowrap; }
+@utility draft-banner { background: var(--color-pending); color: var(--color-pending-foreground); text-align: center; font-size: 0.8125rem; font-weight: 600; padding: 0.4rem 1rem; }
+@utility pending { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; margin-top: 0.75rem; padding: 0.75rem 1rem; border: 1px dashed var(--color-pending-foreground); border-radius: var(--radius); background: var(--color-pending); color: var(--color-pending-foreground); font-size: 0.9375rem; }
+@utility pending-tag { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+@utility media-placeholder { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; border: 2px dashed var(--color-pending-foreground); border-radius: var(--radius); background: var(--color-pending); color: var(--color-pending-foreground); }
+@utility offer-panel { border: 2px solid var(--color-primary); border-radius: calc(var(--radius) + 4px); background: var(--color-card); padding: 1.5rem; @media (min-width: 768px) { padding: 2.5rem; } }
+@utility offer-specs {
+  margin-top: 1.25rem; display: grid; gap: 0.75rem;
+  & > div { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem; }
+  & dt { color: var(--color-muted-foreground); }
+  & dd { font-weight: 600; text-align: right; }
+}
+@utility price { font-family: var(--font-display); font-size: 2.5rem; font-weight: 600; line-height: 1.1; }
+@utility price-pending { font-family: var(--font-display); font-size: 1.75rem; color: var(--color-muted-foreground); }
+@utility faq-trigger { font-size: 1.0625rem; text-align: left; min-height: 48px; }
+@utility skip-link {
+  position: absolute; left: 1rem; top: -4rem; z-index: 50; padding: 0.5rem 1rem; background: var(--color-primary); color: var(--color-primary-foreground); border-radius: var(--radius);
+  &:focus { top: 1rem; }
 }
