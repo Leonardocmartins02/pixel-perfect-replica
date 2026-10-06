@@ -1,29 +1,40 @@
-# Welcome to your Lovable project
+# perol-flotador-adv
 
-This project was built with [Lovable](https://lovable.dev).
+Advertorial de um único produto — **Flotador Perol**, vendido por caixa. Protótipo para revisão interna: **não publicado e sem compra habilitada**.
 
-## Build with Lovable
+## Stack
+TanStack Start v1 (React 19, Vite), TypeScript, Tailwind CSS v4 (tokens em `src/styles.css`), Radix Accordion (shadcn), Vitest + Testing Library. Gerenciador: **bun** (`bun.lock`).
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+## Executar
+Pré-requisitos: Bun ≥ 1.1 (ou Node 20+ com bun instalado).
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+```bash
+bun install
+bun run dev        # desenvolvimento
+bun run build      # build de produção
+bun run lint       # ESLint
+bun run test       # Vitest
+bunx tsc --noEmit  # tipos
 ```
 
-## Built with
+## Organização
+```text
+src/content/flotador.ts          dados: produto, editorial, mídia, oferta, vendedor, FAQ, status
+src/lib/offer.ts                 regras da oferta (liberação, preço por unidade, BRL)
+src/components/advertorial/      seções da página
+src/routes/index.tsx             página principal (/)
+src/test/                        testes
+docs/                            briefing e plano
+```
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+## Onde editar
+- Conteúdo, preço (em centavos), quantidade, URL de compra: `src/content/flotador.ts`.
+- Regras de liberação: `src/lib/offer.ts` (`getOfferReadiness`).
+
+## Estado atual
+- Status `draft`; aprovação comercial desativada; todos os dados comerciais `null`.
+- Prévia com `noindex` e `robots.txt` bloqueando tudo (não é controle de acesso).
+- Sem checkout, pagamento, frete, WhatsApp, analytics ou coleta de dados.
+
+## Continuidade local
+Após o proprietário conectar o GitHub (Lovable → + → GitHub), clone o repositório, rode `bun install` e `bun run dev`. Commits na branch conectada sincronizam com o Lovable.
