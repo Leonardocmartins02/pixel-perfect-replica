@@ -1674,6 +1674,10 @@ p {
 .comparison-slider [data-slot="slider-range"] {
   background: transparent;
 }
+/* Radix pulls the thumb inward near the ends; keep it centered on the divider line (--x). */
+.comparison-slider span:has(> [data-slot="slider-thumb"]) {
+  left: var(--x) !important;
+}
 .comparison-slider [data-slot="slider-thumb"] {
   width: 44px;
   height: 44px;
