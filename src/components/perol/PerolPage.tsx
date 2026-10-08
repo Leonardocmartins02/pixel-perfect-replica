@@ -84,8 +84,13 @@ export function PerolPage() {
     const position = () => {
       const hero = page.querySelector("#comprar")?.getBoundingClientRect();
       const offers = page.querySelector("#kits-final")?.getBoundingClientRect();
-      if (hero && offers)
-        setSticky(hero.bottom < 0 && !(offers.top < window.innerHeight && offers.bottom > 0));
+      const buy = page.querySelector("#comprar [data-buy]")?.getBoundingClientRect();
+      if (!hero || !offers) return;
+      const offersVisible = offers.top < window.innerHeight && offers.bottom > 0;
+      // no mobile a barra aparece desde o início, até o botão "Comprar agora" entrar na tela
+      const compact = window.matchMedia("(max-width: 980px)").matches;
+      const buyVisible = !!buy && buy.top < window.innerHeight && buy.bottom > 0;
+      setSticky(compact ? !buyVisible && !offersVisible : hero.bottom < 0 && !offersVisible);
     };
     position();
     const resize = new ResizeObserver(position);

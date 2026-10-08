@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PerolPage } from "@/components/perol/PerolPage";
 import { PRODUCTS } from "@/content/flotador";
@@ -84,5 +84,21 @@ describe("Galeria do topo (Embla)", () => {
       "lazy",
       "lazy",
     ]);
+  });
+  it("passa as fotos sozinho a cada 2,5 s e o botão de pausa interrompe", () => {
+    vi.useFakeTimers();
+    try {
+      render(<PerolPage />);
+      act(() => void vi.advanceTimersByTime(2600));
+      expect(counter()).toBe(`2 / ${PRODUCTS.f5.gallery.length}`);
+      fireEvent.click(screen.getByRole("button", { name: "Pausar fotos" }));
+      act(() => void vi.advanceTimersByTime(8000));
+      expect(counter()).toBe(`2 / ${PRODUCTS.f5.gallery.length}`);
+      fireEvent.click(screen.getByRole("button", { name: "Reproduzir fotos" }));
+      act(() => void vi.advanceTimersByTime(2600));
+      expect(counter()).toBe(`3 / ${PRODUCTS.f5.gallery.length}`);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
