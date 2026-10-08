@@ -18,3 +18,21 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+// Embla (carrosséis) observa tamanho e visibilidade; o jsdom não tem nenhum dos dois.
+class ObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return [];
+  }
+}
+for (const name of ["ResizeObserver", "IntersectionObserver"] as const) {
+  if (!(name in window))
+    Object.defineProperty(window, name, {
+      writable: true,
+      configurable: true,
+      value: ObserverStub,
+    });
+}

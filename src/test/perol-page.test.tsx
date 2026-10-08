@@ -25,11 +25,7 @@ describe("Página importada do modelo Perol", () => {
     render(<PerolPage />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("F5 FlotadorUniversal");
     fireEvent.click(screen.getByRole("radio", { name: /1 un\./ }));
-    fireEvent.click(screen.getByRole("button", { name: "Ver foto 3" }));
-    expect(screen.getByRole("button", { name: "Ver foto 3" })).toHaveAttribute(
-      "aria-current",
-      "true",
-    );
+    // o comportamento da galeria (miniaturas, contador) é testado em product-gallery.test.tsx
     fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("LavixFinalizador");
     expect(screen.getByText("Em quais tecidos posso usar?")).toBeInTheDocument();
@@ -41,19 +37,12 @@ describe("Página importada do modelo Perol", () => {
     expect(window.location.hash).toBe("#lavix");
   });
 
-  it("mantém Lavix ao navegar para uma seção e permite avançar por gesto", () => {
-    const { container } = render(<PerolPage />);
+  it("mantém Lavix ao navegar para uma seção", () => {
+    render(<PerolPage />);
     fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
     window.history.replaceState(null, "", "/#comprar");
     fireEvent(window, new HashChangeEvent("hashchange"));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("LavixFinalizador");
-    const gallery = container.querySelector("#mainImg")!;
-    fireEvent.touchStart(gallery, { touches: [{ clientX: 200 }] });
-    fireEvent.touchEnd(gallery, { changedTouches: [{ clientX: 100 }] });
-    expect(screen.getByRole("button", { name: "Ver foto 2" })).toHaveAttribute(
-      "aria-current",
-      "true",
-    );
   });
 
   it("abre Lavix pelo link direto", async () => {
