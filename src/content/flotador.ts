@@ -116,3 +116,465 @@ export const flotador: FlotadorConfig = {
     { question: "Para quais regiões há entrega e em quanto tempo?", answer: null },
   ],
 };
+
+// Conteúdo recebido em perol-lp-github.zip. Condições comerciais seguem pendentes.
+// PRICES usa centavos inteiros, como o restante do projeto.
+export type ProductId = "f5" | "lx";
+export type KitId = "u1" | "u2" | "cx6";
+export interface PerolKit {
+  id: KitId;
+  q: string;
+  title: string;
+  n: number;
+  d: string;
+  flag?: string;
+  navy?: boolean;
+  perks: string[];
+}
+export interface ProductContent {
+  name: string;
+  short: string;
+  chip1: string;
+  h1a: string;
+  h1b: string;
+  sub: string;
+  ticks: string[];
+  gallery: string[];
+  promo: string[];
+  pb4a: string;
+  pb4b: string;
+  obj: {
+    q: string;
+    h: string;
+    p: string;
+    proof: string[];
+    pend?: string;
+    img: string;
+    scene?: boolean;
+    f: { i: string; b: string; s: string; pend?: number }[];
+  }[];
+  mechTitle: string;
+  mechLead: string;
+  mech: { b: string; p: string }[];
+  mechLabels: [string, string, string, string];
+  stats: { v: string; k: string; src: string; real?: boolean }[];
+  study: { h: string; p: string; pin: string }[];
+  ba: { t: string; s: string }[];
+  whereTitle: string;
+  whereLead: string;
+  colA: string;
+  iconsA: [string, string][];
+  iconsB: [string, string][];
+  photos: [string, string][];
+  filters: string[];
+  faq: { q: string; a?: string; p?: string }[];
+}
+export const PRICES: Record<ProductId, Record<KitId, number | null>> = {
+  f5: { u1: null, u2: null, cx6: null },
+  lx: { u1: null, u2: null, cx6: null },
+};
+export const CHECKOUT: Record<ProductId, Record<KitId, string | null>> = {
+  f5: { u1: null, u2: null, cx6: null },
+  lx: { u1: null, u2: null, cx6: null },
+};
+export const KITS: PerolKit[] = [
+  {
+    id: "u1",
+    q: "1 un.",
+    title: "1 unidade",
+    n: 1,
+    d: "1 frasco de 1 L",
+    perks: ["1 litro", "Para conhecer o produto"],
+  },
+  {
+    id: "u2",
+    q: "2 un.",
+    title: "2 unidades",
+    n: 2,
+    d: "2 frascos de 1 L",
+    flag: "Mais pedido",
+    navy: true,
+    perks: ["2 litros", "Menos por litro que o avulso"],
+  },
+  {
+    id: "cx6",
+    q: "Caixa",
+    title: "Caixa fechada",
+    n: 6,
+    d: "6 frascos de 1 L",
+    flag: "Melhor custo",
+    perks: ["6 litros", "Menor preço por litro", "Ideal para empresas"],
+  },
+];
+export const DIVS = [
+  "Institucional",
+  "Tratamento de piso",
+  "Industrial",
+  "Alimentícia",
+  "Frigorífico",
+  "Agro",
+  "Hotelaria",
+  "Odonto hospitalar",
+  "Higiene pessoal",
+  "Lavanderia",
+  "Automotivo",
+  "Aviação",
+  "Linha Tall",
+];
+
+export const PRODUCTS: Record<ProductId, ProductContent> = {
+  f5: {
+    name: "F5 Flotador Universal",
+    short: "F5 Flotador",
+    chip1: "Limpador de uso geral",
+    h1a: "F5 Flotador",
+    h1b: "Universal",
+    sub: "O limpador de uso geral da linha profissional Perol. Solta a sujeira da superfície e deixa sair no pano, em pisos, inox, azulejos e bancadas.",
+    ticks: [
+      "Linha usada em hotéis, hospitais, escolas e indústrias",
+      "Um frasco para pisos, inox, vidros, azulejos e louças",
+      "Aplique com pano, mop, pulverizador ou máquina",
+    ],
+    gallery: ["f5-pack", "f5-close", "f5-pour", "f5-mop", "f5-steel", "f5-lobby", "f5-counter"],
+    promo: [
+      "Envio para todo o Brasil",
+      "Compra direta, sem cadastro",
+      "Linha profissional Perol",
+      "Fábrica ISO 9001",
+    ],
+    pb4a: "Uso geral",
+    pb4b: "Pisos, inox, vidros, azulejos e louças",
+    obj: [
+      {
+        q: "Será que limpa de verdade?",
+        h: "A sujeira solta e sai no pano",
+        p: "Os tensoativos do F5 envolvem a gordura e as partículas e mantêm tudo em suspensão. Em vez de espalhar a sujeira, você retira com o pano ou com a máquina.",
+        proof: ["Ação de flotação"],
+        pend: "% de remoção do laudo",
+        img: "f5-pack",
+        f: [
+          { i: "flask", b: "Flotação", s: "Partículas em suspensão" },
+          { i: "drop", b: "—%", s: "Remoção de sujidade", pend: 1 },
+        ],
+      },
+      {
+        q: "Vai manchar meu piso?",
+        h: "Feito para as superfícies laváveis",
+        p: "O rótulo indica uso em pisos frios, cerâmica, porcelanato, azulejos, inox, vidros, fórmica e acrílico. Na primeira vez, teste numa área pequena e escondida.",
+        proof: ["Pisos frios", "Inox", "Vidros", "Azulejos"],
+        img: "f5-mop",
+        scene: true,
+        f: [
+          { i: "tile", b: "Pisos frios", s: "Cerâmica e porcelanato" },
+          { i: "sparkle", b: "Inox e vidro", s: "Sem outro produto" },
+        ],
+      },
+      {
+        q: "Produto profissional não é caro?",
+        h: "Rende mais que o de mercado",
+        p: "Na caixa com 6 litros, o custo por litro cai. Com a diluição correta, cada litro vira vários litros de solução de limpeza.",
+        proof: ["Diluível"],
+        pend: "custo por litro diluído",
+        img: "f5-pack",
+        f: [
+          { i: "coin", b: "R$ –,–", s: "por litro de solução", pend: 1 },
+          { i: "drop", b: "1 : —", s: "Diluição recomendada", pend: 1 },
+        ],
+      },
+      {
+        q: "Posso confiar na marca?",
+        h: "Fábrica certificada ISO 9001",
+        p: "A Perol tem certificação ISO 9001 e atende 13 divisões do mercado profissional, de hospitais e cozinhas industriais a aviação e hotelaria.",
+        proof: ["ISO 9001", "13 divisões"],
+        img: "f5-steel",
+        scene: true,
+        f: [
+          { i: "shield", b: "ISO 9001", s: "Gestão de qualidade" },
+          { i: "factory", b: "13 divisões", s: "Do hospital à aviação" },
+        ],
+      },
+      {
+        q: "E se der problema com o pedido?",
+        h: "Compra segura do clique à entrega",
+        p: "Você paga direto no checkout seguro e acompanha o envio. Prazo de entrega e garantia aparecem aqui antes da compra.",
+        proof: ["Checkout seguro"],
+        pend: "prazo e garantia",
+        img: "f5-pack",
+        f: [
+          { i: "lock", b: "Pagamento", s: "Checkout seguro" },
+          { i: "truck", b: "— dias", s: "Prazo de entrega", pend: 1 },
+        ],
+      },
+    ],
+    mechTitle: "Flotação: a sujeira sobe e sai",
+    mechLead:
+      "O nome vem do jeito que o produto age. Ele não esfrega a sujeira para os lados, ele a solta e deixa em suspensão para ser retirada.",
+    mech: [
+      {
+        b: "Os tensoativos chegam na sujeira",
+        p: "As moléculas têm um lado que se liga à gordura e outro que se liga à água.",
+      },
+      {
+        b: "A sujeira é envolvida e flutua",
+        p: "Gordura e partículas ficam presas em pequenas esferas e se soltam da superfície.",
+      },
+      {
+        b: "Você retira tudo no pano",
+        p: "Com a sujeira em suspensão, um pano úmido ou o mop recolhem sem espalhar.",
+      },
+    ],
+    mechLabels: ["Superfície", "Sujeira", "Tensoativo", "Pano"],
+    stats: [
+      { v: "—%", k: "de remoção de sujidade em teste padronizado", src: "laudo de eficácia" },
+      { v: "— m²", k: "limpos com 1 litro diluído", src: "rendimento por litro" },
+      { v: "1:—", k: "diluição para limpeza diária", src: "ficha técnica" },
+      {
+        v: "24",
+        k: "meses de validade a partir da fabricação",
+        src: "rótulo do produto",
+        real: true,
+      },
+    ],
+    study: [
+      {
+        h: "Teste de remoção de gordura",
+        p: "Resultado de bancada comparando a superfície antes e depois de uma aplicação, com o método e o laboratório citados.",
+        pin: "Laudo Perol ou laboratório parceiro",
+      },
+      {
+        h: "Compatibilidade com superfícies",
+        p: "Lista das superfícies testadas sem manchar ou opacar, e das que pedem cuidado, como alumínio anodizado e couro.",
+        pin: "Ficha técnica e FISPQ do produto",
+      },
+    ],
+    ba: [
+      { t: "Piso de cozinha industrial", s: "Gordura acumulada no rejunte" },
+      { t: "Bancada de inox", s: "Marcas e respingos" },
+      { t: "Porcelanato de recepção", s: "Sujeira de alto tráfego" },
+    ],
+    whereTitle: "Do piso ao inox com o mesmo frasco",
+    whereLead: "Superfícies e ambientes indicados no rótulo do F5 Flotador Universal.",
+    colA: "Superfícies",
+    iconsA: [
+      ["tile", "Cerâmica"],
+      ["porc", "Porcelanato"],
+      ["granite", "Granito"],
+      ["steel", "Inox"],
+      ["glass", "Vidros"],
+      ["bath", "Box e louças"],
+    ],
+    iconsB: [
+      ["hotel", "Hotéis"],
+      ["hosp", "Hospitais"],
+      ["school", "Escolas"],
+      ["ind", "Indústrias"],
+      ["kitchen", "Cozinhas"],
+      ["condo", "Condomínios"],
+    ],
+    photos: [
+      ["f5-lobby", "Recepções e halls"],
+      ["f5-mop", "Pisos de alto tráfego"],
+      ["f5-steel", "Cozinhas industriais"],
+      ["f5-counter", "Casa e escritório"],
+    ],
+    filters: ["Todas", "Hotel", "Condomínio", "Restaurante", "Casa", "Empresa de limpeza"],
+    faq: [
+      {
+        q: "Onde posso usar o F5 Flotador?",
+        a: "Em superfícies laváveis: pisos frios, cerâmica, porcelanato, azulejos, inox, vidros, fórmica, acrílico, louças e box de banheiro. Teste numa área pequena antes.",
+      },
+      { q: "Precisa diluir?", p: "diluição recomendada" },
+      { q: "Quanto rende 1 litro?", p: "rendimento por litro" },
+      {
+        q: "Qual a validade?",
+        a: "24 meses a partir da data de fabricação, guardado na embalagem original, em local seco e arejado.",
+      },
+      { q: "Em quantos dias chega?", p: "prazo e regiões" },
+      {
+        q: "Posso misturar com outro produto?",
+        a: "Não. O rótulo orienta não misturar com outros produtos e manter na embalagem original.",
+      },
+    ],
+  },
+  lx: {
+    name: "Lavix Finalizador",
+    short: "Lavix",
+    chip1: "Odorizante para tecidos",
+    h1a: "Lavix",
+    h1b: "Finalizador",
+    sub: "O finalizador usado por lavanderias de hotéis e hospitais no fim da lavagem. Deixa cama, mesa e banho com perfume uniforme, sem precisar de mais perfume no processo.",
+    ticks: [
+      "Indicado para lavanderias hospitalares, hoteleiras e industriais",
+      "Para algodão e tecidos mistos de cama, mesa e banho",
+      "Na lavadora ou borrifado no tecido seco",
+    ],
+    gallery: [
+      "lx-pack",
+      "lx-close",
+      "lx-pour-laundry",
+      "lx-machines",
+      "lx-spray",
+      "lx-towels",
+      "lx-front",
+    ],
+    promo: [
+      "Envio para todo o Brasil",
+      "Compra direta, sem cadastro",
+      "Linha profissional Perol",
+      "Fábrica ISO 9001",
+    ],
+    pb4a: "Lavanderia",
+    pb4b: "Hospitalar, hoteleira e industrial",
+    obj: [
+      {
+        q: "O cheiro some na secagem?",
+        h: "Aplicado no fim, para ficar no tecido",
+        p: "O Lavix entra no final da lavagem, no tecido ainda úmido, e segue para a secadora. Ou é borrifado no tecido seco, antes de dobrar.",
+        proof: ["Etapa final"],
+        pend: "horas de fixação no teste",
+        img: "lx-pack",
+        f: [
+          { i: "sparkle", b: "— h", s: "de perfume no tecido", pend: 1 },
+          { i: "drop", b: "Etapa final", s: "Depois do enxágue" },
+        ],
+      },
+      {
+        q: "Vai manchar minha roupa?",
+        h: "Indicado para algodão e mistos",
+        p: "O rótulo indica uso em tecidos de algodão e tecidos mistos de cama, mesa e banho. Na primeira vez, teste numa parte escondida da peça.",
+        proof: ["Algodão", "Tecidos mistos"],
+        img: "lx-towels",
+        scene: true,
+        f: [
+          { i: "tile", b: "Algodão", s: "E tecidos mistos" },
+          { i: "sparkle", b: "Cama e banho", s: "Lençóis e toalhas" },
+        ],
+      },
+      {
+        q: "Quanto rende um frasco?",
+        h: "Pouca dose por lavagem",
+        p: "Como é um finalizador concentrado, a dose por quilo de roupa é pequena. Na caixa, o custo por litro cai ainda mais.",
+        proof: ["Concentrado"],
+        pend: "dose por kg de roupa",
+        img: "lx-pack",
+        f: [
+          { i: "coin", b: "— kg", s: "de roupa por litro", pend: 1 },
+          { i: "drop", b: "— ml", s: "por kg de roupa", pend: 1 },
+        ],
+      },
+      {
+        q: "Posso confiar na marca?",
+        h: "Fábrica certificada ISO 9001",
+        p: "A Perol tem certificação ISO 9001 e uma divisão inteira dedicada a lavanderia, além de hotelaria e área hospitalar.",
+        proof: ["ISO 9001", "Divisão lavanderia"],
+        img: "lx-machines",
+        scene: true,
+        f: [
+          { i: "shield", b: "ISO 9001", s: "Gestão de qualidade" },
+          { i: "factory", b: "13 divisões", s: "Incluindo lavanderia" },
+        ],
+      },
+      {
+        q: "E se der problema com o pedido?",
+        h: "Compra segura do clique à entrega",
+        p: "Você paga direto no checkout seguro e acompanha o envio. Prazo de entrega e garantia aparecem aqui antes da compra.",
+        proof: ["Checkout seguro"],
+        pend: "prazo e garantia",
+        img: "lx-pack",
+        f: [
+          { i: "lock", b: "Pagamento", s: "Checkout seguro" },
+          { i: "truck", b: "— dias", s: "Prazo de entrega", pend: 1 },
+        ],
+      },
+    ],
+    mechTitle: "Perfume que fica na fibra",
+    mechLead:
+      "O Lavix entra quando a roupa já está limpa. Ele não lava, ele finaliza: deposita a fragrância nas fibras para durar depois da secagem.",
+    mech: [
+      {
+        b: "A roupa sai limpa da lavagem",
+        p: "O Lavix vem depois do enxágue, com o tecido ainda úmido.",
+      },
+      {
+        b: "A fragrância se distribui na fibra",
+        p: "O produto é aplicado puro e se espalha por igual pelo tecido.",
+      },
+      {
+        b: "O perfume fica depois de secar",
+        p: "Lençóis e toalhas saem da secadora com cheiro de roupa de hotel.",
+      },
+    ],
+    mechLabels: ["Tecido", "Fibra", "Fragrância", "Secagem"],
+    stats: [
+      { v: "— h", k: "de perfume no tecido após a secagem", src: "teste de fixação" },
+      { v: "— kg", k: "de roupa perfumados com 1 litro", src: "rendimento por litro" },
+      { v: "— ml", k: "por kg de roupa seca", src: "ficha técnica" },
+      {
+        v: "24",
+        k: "meses de validade a partir da fabricação",
+        src: "rótulo do produto",
+        real: true,
+      },
+    ],
+    study: [
+      {
+        h: "Teste de fixação da fragrância",
+        p: "Avaliação do perfume no tecido em horas e dias após a secagem, com método e amostra descritos.",
+        pin: "Laudo Perol ou laboratório parceiro",
+      },
+      {
+        h: "Compatibilidade com tecidos",
+        p: "Tecidos testados sem manchar ou alterar a cor, e a forma correta de aplicar em cada processo de lavanderia.",
+        pin: "Ficha técnica e FISPQ do produto",
+      },
+    ],
+    ba: [
+      { t: "Toalha de hotel", s: "Ao sair da secadora" },
+      { t: "Jogo de lençol", s: "Após 7 dias guardado" },
+      { t: "Enxoval de pousada", s: "Na arrumação do quarto" },
+    ],
+    whereTitle: "O toque final da lavanderia profissional",
+    whereLead: "Tecidos e ambientes indicados no rótulo do Lavix Finalizador.",
+    colA: "Tecidos",
+    iconsA: [
+      ["cotton", "Algodão"],
+      ["sheet", "Lençóis"],
+      ["towel", "Toalhas"],
+      ["uniform", "Uniformes"],
+      ["pillow", "Fronhas"],
+      ["tile", "Tecidos mistos"],
+    ],
+    iconsB: [
+      ["hotel", "Hotéis"],
+      ["hosp", "Hospitais"],
+      ["laundry", "Lavanderias"],
+      ["ind", "Indústrias"],
+      ["condo", "Pousadas"],
+      ["home", "Casa"],
+    ],
+    photos: [
+      ["lx-machines", "Lavanderias"],
+      ["lx-towels", "Toalhas e banho"],
+      ["lx-spray", "Roupa de cama"],
+      ["lx-front", "Rotina da casa"],
+    ],
+    filters: ["Todas", "Hotel", "Pousada", "Lavanderia", "Casa", "Clínica"],
+    faq: [
+      {
+        q: "Em quais tecidos posso usar?",
+        a: "Algodão e tecidos mistos: roupa de cama, mesa e banho e tecidos em geral.",
+      },
+      {
+        q: "Como aplico?",
+        a: "Puro, sobre o tecido ainda molhado no fim da lavagem, ou borrifado sobre o tecido seco antes de dobrar ou embalar.",
+      },
+      { q: "Quanto usar por lavagem?", p: "dose por kg de roupa" },
+      {
+        q: "Qual a validade?",
+        a: "24 meses a partir da data de fabricação, na embalagem original.",
+      },
+      { q: "Em quantos dias chega?", p: "prazo e regiões" },
+      { q: "O perfume dura quanto tempo?", p: "teste de fixação" },
+    ],
+  },
+};

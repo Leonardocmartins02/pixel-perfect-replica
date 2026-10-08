@@ -1,10 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AdvertorialPage } from "@/components/advertorial/AdvertorialPage";
-import { flotador } from "@/content/flotador";
+import { PerolPage } from "@/components/perol/PerolPage";
 
-const title = "Flotador Perol — proposta de compra por caixa";
+const title = "Perol — F5 Flotador e Lavix Finalizador";
 const description =
-  "Conheça o Flotador Perol e a proposta de compra por caixa. Prévia em validação.";
+  "Conheça F5 Flotador e Lavix Finalizador, da linha profissional Perol. Prévia em validação.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -17,5 +16,5 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: () => <AdvertorialPage config={flotador} />,
+  component: PerolPage,
 });
