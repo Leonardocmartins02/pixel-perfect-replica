@@ -1522,65 +1522,124 @@ p {
 }
 .stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   gap: 16px;
 }
+/* resumo: quantos dados já têm fonte, em segmentos (um por dado) */
+.dados-sum {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font: 600 13px/1.2 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+.dados-sum p {
+  margin: 0;
+}
+.dados-sum b {
+  font-size: 18px;
+  color: #fff;
+}
+.dados-seg {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 120px;
+  max-width: 320px;
+}
+.dados-seg span {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 208, 138, 0.55);
+}
+.dados-seg span.on {
+  border: 0;
+  background: #9fd8f5;
+}
+.perol-page[data-prod="lx"] .dados-seg span.on {
+  background: #d5c6f3;
+}
+.stats-real {
+  display: grid;
+  gap: 16px;
+  align-content: stretch;
+}
 .stat {
-  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 20px;
   padding: 24px;
   display: grid;
-  gap: 12px;
+  gap: 8px;
   align-content: start;
+}
+/* dado confirmado: número grande e a fonte */
+.stat.real {
+  background: #fff;
+  color: var(--ink);
+  align-content: center;
+}
+.stat.real .v {
+  font: 900 clamp(88px, 12vw, 148px) / 0.9 var(--display);
+  font-stretch: 80%;
+  color: var(--navy);
+}
+.stat.real .k {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--navy);
+}
+.stat.real .src {
+  font: 500 12px/1.3 var(--mono);
+  color: var(--perol-muted);
+}
+/* dado pendente: campo vazio, tracejado, com o documento que o fecha */
+.stats-wait {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stat.wait {
+  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-areas:
+    "v k"
+    "v p";
+  align-items: center;
+  column-gap: 18px;
+  padding: 18px 20px;
+  border: 1px dashed rgba(255, 208, 138, 0.5);
   background: rgba(255, 255, 255, 0.03);
 }
-.gauge {
-  width: 110px;
-  height: 110px;
-}
-.gauge circle {
-  fill: none;
-  stroke-width: 9;
-}
-.gauge .bg {
-  stroke: rgba(255, 255, 255, 0.14);
-}
-.gauge .fg {
-  stroke: #9fd8f5;
-  stroke-linecap: round;
-  stroke-dasharray: 283;
-  stroke-dashoffset: 283;
-  transition: stroke-dashoffset 1.6s cubic-bezier(0.2, 0.7, 0.2, 1);
-  transform: rotate(-90deg);
-  transform-origin: 50% 50%;
-}
-.perol-page[data-prod="lx"] .gauge .fg {
-  stroke: #d5c6f3;
-}
-.stat.in .gauge .fg {
-  stroke-dashoffset: var(--off, 283);
-}
-.gauge text {
-  fill: #fff;
-  font: 900 24px var(--display);
+.stat.wait .v {
+  grid-area: v;
+  display: grid;
+  place-items: center;
+  height: 64px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+  font: 900 22px var(--display);
   font-stretch: 80%;
-}
-.stat .k {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.85);
-}
-.stat .src {
-  font: 500 11px/1.3 var(--mono);
   color: rgba(255, 255, 255, 0.55);
 }
-.stat .pend,
-.study .pend {
-  justify-self: start;
+.stat.wait .k {
+  grid-area: k;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
 }
-.stat .pend {
+.stat.wait .pend {
+  grid-area: p;
+  justify-self: start;
   color: #ffd08a;
   background: rgba(255, 208, 138, 0.08);
   border-color: rgba(255, 208, 138, 0.45);
+}
+.study .pend {
+  justify-self: start;
 }
 .study {
   margin-top: 28px;
@@ -2395,7 +2454,7 @@ body.switching .swap {
     border-top: 0;
   }
   .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
   .ba-grid,
   .reviews,
@@ -2475,6 +2534,14 @@ body.switching .swap {
   }
   .oc {
     padding: 20px;
+  }
+  .stat.wait {
+    grid-template-columns: 72px minmax(0, 1fr);
+    column-gap: 14px;
+  }
+  .stat.wait .v {
+    height: 52px;
+    font-size: 18px;
   }
   .oc .stage {
     margin: -20px -20px 6px;

@@ -667,8 +667,8 @@ export function PerolPage() {
               <span className="eyebrow">Dados de eficácia</span>
               <h2>Números do laudo, não promessa</h2>
               <p>
-                Os medidores enchem com o resultado de cada teste. Os números entram a partir do
-                laudo técnico ou da ficha do produto Perol.
+                Cada número entra a partir do laudo técnico ou da ficha do produto Perol. Enquanto o
+                documento não chega, o campo fica marcado como Pendente.
               </p>
             </div>
             <div className="stats" id="stats">

@@ -226,30 +226,43 @@ export function SurfaceIcons({ items }: { items: [string, string][] }) {
     </>
   );
 }
+// Painel de dados: o que já é confirmado ganha destaque; o que depende de laudo/ficha vira um campo
+// vazio marcado como Pendente (sem medidor, que sugeria um resultado parcial que não existe).
 export function Stats({ product }: { product: ProductContent }) {
+  const confirmed = product.stats.filter((item) => item.real);
+  const waiting = product.stats.filter((item) => !item.real);
   return (
     <>
-      {product.stats.map((item) => (
-        <div
-          className="stat"
-          key={item.k}
-          style={{ "--off": item.real ? 0 : 250 } as CSSProperties}
-        >
-          <svg className="gauge" viewBox="0 0 110 110">
-            <circle className="bg" cx="55" cy="55" r="45" />
-            <circle className="fg" cx="55" cy="55" r="45" />
-            <text x="55" y="63" textAnchor="middle">
-              {item.v}
-            </text>
-          </svg>
-          <span className="k">{item.k}</span>
-          {item.real ? (
-            <span className="src">Fonte: {item.src}</span>
-          ) : (
-            <Pending>{item.src}</Pending>
-          )}
+      <div className="dados-sum">
+        <p>
+          <b>{confirmed.length}</b> de {product.stats.length} dados confirmados
+        </p>
+        <div className="dados-seg" aria-hidden="true">
+          {product.stats.map((item) => (
+            <span key={item.k} className={item.real ? "on" : ""} />
+          ))}
         </div>
-      ))}
+      </div>
+      <div className="stats-real">
+        {confirmed.map((item) => (
+          <div className="stat real rv" key={item.k}>
+            <b className="v">{item.v}</b>
+            <span className="k">{item.k}</span>
+            <span className="src">Fonte: {item.src}</span>
+          </div>
+        ))}
+      </div>
+      <ul className="stats-wait">
+        {waiting.map((item) => (
+          <li className="stat wait rv" key={item.k}>
+            <span className="v" aria-label="valor pendente">
+              {item.v}
+            </span>
+            <span className="k">{item.k}</span>
+            <Pending>{item.src}</Pending>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }
