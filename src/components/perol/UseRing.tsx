@@ -14,7 +14,7 @@ type Props = {
   name: string;
   gallery: string[];
   /** [arquivo, legenda]: a legenda só aparece quando já existe texto no conteúdo. */
-  captions?: [string, string, string?][];
+  captions?: [string, string, string?, string?][];
 };
 
 // Packshots (frasco isolado) ficam de fora: o anel mostra só as fotos de cena de product.gallery.

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApplicationsCarousel } from "@/components/perol/ApplicationsCarousel";
 import { ProductFaq } from "@/components/perol/controls";
@@ -12,15 +12,15 @@ afterEach(() => {
 });
 
 describe("Aplicações e FAQ", () => {
-  it("permite explorar todos os ambientes por botões e teclado, sem avançar sozinho", () => {
+  it("permite explorar todos os ambientes por botões e teclado", () => {
     vi.useFakeTimers();
     try {
       render(<ApplicationsCarousel product={PRODUCTS.f5} />);
       const carousel = screen.getByRole("region", { name: /Ambientes de uso/ });
-      expect(within(carousel).getAllByRole("img")).toHaveLength(PRODUCTS.f5.photos.length);
+      expect(within(carousel).getAllByRole("heading", { level: 4 })).toHaveLength(
+        PRODUCTS.f5.photos.length,
+      );
       expect(screen.getByRole("button", { name: "Ambiente anterior" })).toBeDisabled();
-      vi.advanceTimersByTime(10000);
-      expect(carousel.querySelector(".count")).toHaveTextContent("1 / 4");
       fireEvent.click(screen.getByRole("button", { name: "Próximo ambiente" }));
       expect(carousel.querySelector(".count")).toHaveTextContent("2 / 4");
       fireEvent.keyDown(carousel, { key: "ArrowRight" });
@@ -29,6 +29,31 @@ describe("Aplicações e FAQ", () => {
       expect(screen.getByRole("button", { name: "Próximo ambiente" })).toBeDisabled();
       fireEvent.keyDown(carousel, { key: "ArrowLeft" });
       expect(carousel.querySelector(".count")).toHaveTextContent("3 / 4");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("passa sozinho a cada 2,5 s, volta ao início e pausa com o mouse", () => {
+    vi.useFakeTimers();
+    try {
+      render(<ApplicationsCarousel product={PRODUCTS.f5} />);
+      const carousel = screen.getByRole("region", { name: /Ambientes de uso/ });
+      const count = () => carousel.querySelector(".count");
+      act(() => void vi.advanceTimersByTime(2400));
+      expect(count()).toHaveTextContent("1 / 4");
+      act(() => void vi.advanceTimersByTime(100));
+      expect(count()).toHaveTextContent("2 / 4");
+      fireEvent.mouseEnter(carousel);
+      act(() => void vi.advanceTimersByTime(10000));
+      expect(count()).toHaveTextContent("2 / 4");
+      fireEvent.mouseLeave(carousel);
+      act(() => void vi.advanceTimersByTime(2500));
+      expect(count()).toHaveTextContent("3 / 4");
+      act(() => void vi.advanceTimersByTime(2500));
+      expect(count()).toHaveTextContent("4 / 4");
+      act(() => void vi.advanceTimersByTime(2500));
+      expect(count()).toHaveTextContent("1 / 4");
     } finally {
       vi.useRealTimers();
     }

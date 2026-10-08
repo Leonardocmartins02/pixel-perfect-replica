@@ -7,12 +7,15 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { CarouselNavigation } from "./controls";
-import { img } from "./format";
+import { ICONS } from "./illustrations";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
+
+const AUTOPLAY_MS = 2500;
 
 export function ApplicationsCarousel({ product }: { product: ProductContent }) {
   const [api, setApi] = useState<CarouselApi>();
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
   const reduced = useReducedMotion();
   useEffect(() => {
     if (!api) return;
@@ -23,6 +26,18 @@ export function ApplicationsCarousel({ product }: { product: ProductContent }) {
       api.off("select", sync).off("reInit", sync);
     };
   }, [api]);
+
+  // Passa sozinho a cada 2,5 s e volta ao início no fim; o timer reinicia a cada troca (botão, arraste ou teclado).
+  // Pausa com o mouse ou o foco no carrossel e para de vez com movimento reduzido.
+  useEffect(() => {
+    if (!api || reduced || paused || product.photos.length < 2) return;
+    const timer = window.setTimeout(() => {
+      if (document.hidden) return;
+      if (api.canScrollNext()) api.scrollNext();
+      else api.scrollTo(0);
+    }, AUTOPLAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [api, reduced, paused, index, product.photos.length]);
 
   if (!product.photos.length) return null;
 
@@ -37,6 +52,10 @@ export function ApplicationsCarousel({ product }: { product: ProductContent }) {
         className="applications-carousel"
         aria-label={`Ambientes de uso de ${product.name}`}
         tabIndex={0}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocusCapture={() => setPaused(true)}
+        onBlurCapture={() => setPaused(false)}
         setApi={setApi}
         opts={{
           align: "start",
@@ -46,23 +65,22 @@ export function ApplicationsCarousel({ product }: { product: ProductContent }) {
         }}
       >
         <CarouselContent className="applications-track">
-          {product.photos.map(([file, label, description], i) => (
+          {product.photos.map(([file, label, description, icon], i) => (
             <CarouselItem
               key={file}
               className="application-slide"
               aria-label={`${i + 1} de ${product.photos.length}: ${label}`}
             >
               <figure className="application-card">
-                <div className="application-media">
-                  <img
-                    src={img(file)}
-                    alt={`${product.short} em ${label.toLocaleLowerCase("pt-BR")}`}
-                    loading="lazy"
-                    decoding="async"
-                    draggable={false}
-                    width={1000}
-                    height={1000}
+                <div className="application-top">
+                  <span
+                    className="application-icon"
+                    aria-hidden="true"
+                    dangerouslySetInnerHTML={{ __html: ICONS[icon ?? ""] ?? "" }}
                   />
+                  <span className="application-index" aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
                 </div>
                 <figcaption>
                   <h4>{label}</h4>

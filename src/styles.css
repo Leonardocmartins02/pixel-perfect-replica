@@ -1985,8 +1985,6 @@ p {
 }
 .applications {
   margin-top: clamp(32px, 5vw, 64px);
-  view-timeline-name: --applications-travel;
-  view-timeline-axis: block;
 }
 .applications-heading {
   display: flex;
@@ -2024,19 +2022,41 @@ p {
   overflow: hidden;
   background: var(--white);
 }
-.application-media {
-  aspect-ratio: 1;
-  overflow: hidden;
-  background: var(--line);
+.application-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 20px 0;
 }
-.application-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  user-select: none;
+.application-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--card-radius-small);
+  background: var(--acc-tint);
+  color: var(--navy);
+  transition:
+    background 0.3s,
+    color 0.3s,
+    transform 0.3s;
+}
+.application-icon svg {
+  width: 40px;
+  height: 40px;
+}
+.application-card:hover .application-icon {
+  background: var(--navy);
+  color: var(--white);
+  transform: translateY(-3px);
+}
+.application-index {
+  font: 600 12px/1 var(--mono);
+  letter-spacing: 0.12em;
+  color: var(--perol-muted);
 }
 .application-card figcaption {
-  padding: 20px;
+  padding: 20px 20px 24px;
   display: grid;
   gap: 8px;
 }
@@ -2056,21 +2076,12 @@ p {
    Browsers without scroll timelines keep the original, static image. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .application-media img {
-      animation: application-travel linear both;
-      animation-timeline: --applications-travel;
-      animation-range: entry 0% exit 100%;
-    }
     .use-ring > .overflow-hidden {
       animation: use-stage-reveal linear both;
       animation-timeline: view();
       animation-range: entry 10% cover 35%;
     }
   }
-}
-@keyframes application-travel {
-  from { transform: scale(1.1) translateY(7px); }
-  to { transform: scale(1.1) translateY(-7px); }
 }
 @keyframes use-stage-reveal {
   from { opacity: 0.65; transform: translateY(32px) scale(0.94); }
@@ -2163,7 +2174,6 @@ p {
 @media (max-width: 560px) {
   .application-slide { flex-basis: 86%; }
   .perol-page .carousel-label { display: none; }
-  .application-media { aspect-ratio: 4 / 3; }
 }
 
 /* ===== anel 3D de fotos de uso ===== */
