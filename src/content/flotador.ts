@@ -131,6 +131,19 @@ export interface PerolKit {
   navy?: boolean;
   perks: string[];
 }
+/**
+ * Palco da objeção: a foto e o que ela demonstra, só com fatos já presentes no conteúdo.
+ * O que falta (laudo, prazo, dose) vem de `obj.pend` e aparece como "Pendente".
+ */
+export interface ObjectionStage {
+  img: string;
+  /** Foto de cena (preenche o quadro) em vez de packshot (frasco isolado). */
+  scene?: boolean;
+  /** steps = sequência numerada; tags = lista de itens; spec = ficha com rótulo e detalhe. */
+  kind: "steps" | "tags" | "spec";
+  title: string;
+  items: { b: string; s?: string }[];
+}
 export interface ProductContent {
   name: string;
   short: string;
@@ -149,9 +162,7 @@ export interface ProductContent {
     p: string;
     proof: string[];
     pend?: string;
-    img: string;
-    scene?: boolean;
-    f: { i: string; b: string; s: string; pend?: number }[];
+    stage: ObjectionStage;
   }[];
   mechTitle: string;
   mechLead: string;
@@ -253,23 +264,39 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "Os tensoativos do F5 envolvem a gordura e as partículas e mantêm tudo em suspensão. Em vez de espalhar a sujeira, você retira com o pano ou com a máquina.",
         proof: ["Ação de flotação"],
         pend: "% de remoção do laudo",
-        img: "f5-pack",
-        f: [
-          { i: "flask", b: "Flotação", s: "Partículas em suspensão" },
-          { i: "drop", b: "—%", s: "Remoção de sujidade", pend: 1 },
-        ],
+        stage: {
+          img: "f5-pour",
+          scene: true,
+          kind: "steps",
+          title: "Como a sujeira sai",
+          items: [
+            { b: "Os tensoativos chegam na sujeira" },
+            { b: "A sujeira é envolvida e flutua" },
+            { b: "Você retira tudo no pano" },
+          ],
+        },
       },
       {
         q: "Vai manchar meu piso?",
         h: "Feito para as superfícies laváveis",
         p: "O rótulo indica uso em pisos frios, cerâmica, porcelanato, azulejos, inox, vidros, fórmica e acrílico. Na primeira vez, teste numa área pequena e escondida.",
         proof: ["Pisos frios", "Inox", "Vidros", "Azulejos"],
-        img: "f5-mop",
-        scene: true,
-        f: [
-          { i: "tile", b: "Pisos frios", s: "Cerâmica e porcelanato" },
-          { i: "sparkle", b: "Inox e vidro", s: "Sem outro produto" },
-        ],
+        stage: {
+          img: "f5-mop",
+          scene: true,
+          kind: "tags",
+          title: "Superfícies indicadas no rótulo",
+          items: [
+            { b: "Pisos frios" },
+            { b: "Cerâmica" },
+            { b: "Porcelanato" },
+            { b: "Azulejos" },
+            { b: "Inox" },
+            { b: "Vidros" },
+            { b: "Fórmica" },
+            { b: "Acrílico" },
+          ],
+        },
       },
       {
         q: "Produto profissional não é caro?",
@@ -277,23 +304,31 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "Na caixa com 6 litros, o custo por litro cai. Com a diluição correta, cada litro vira vários litros de solução de limpeza.",
         proof: ["Diluível"],
         pend: "custo por litro diluído",
-        img: "f5-pack",
-        f: [
-          { i: "coin", b: "R$ –,–", s: "por litro de solução", pend: 1 },
-          { i: "drop", b: "1 : —", s: "Diluição recomendada", pend: 1 },
-        ],
+        stage: {
+          img: "f5-pack",
+          kind: "spec",
+          title: "Na caixa",
+          items: [
+            { b: "Caixa com 6 litros", s: "O custo por litro cai" },
+            { b: "Diluível", s: "Cada litro vira vários litros de solução" },
+          ],
+        },
       },
       {
         q: "Posso confiar na marca?",
         h: "Fábrica certificada ISO 9001",
         p: "A Perol tem certificação ISO 9001 e atende 13 divisões do mercado profissional, de hospitais e cozinhas industriais a aviação e hotelaria.",
         proof: ["ISO 9001", "13 divisões"],
-        img: "f5-steel",
-        scene: true,
-        f: [
-          { i: "shield", b: "ISO 9001", s: "Gestão de qualidade" },
-          { i: "factory", b: "13 divisões", s: "Do hospital à aviação" },
-        ],
+        stage: {
+          img: "f5-steel",
+          scene: true,
+          kind: "spec",
+          title: "Quem fabrica",
+          items: [
+            { b: "ISO 9001", s: "Gestão de qualidade" },
+            { b: "13 divisões", s: "Do hospital à aviação" },
+          ],
+        },
       },
       {
         q: "E se der problema com o pedido?",
@@ -301,11 +336,12 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "Você paga direto no checkout seguro e acompanha o envio. Prazo de entrega e garantia aparecem aqui antes da compra.",
         proof: ["Checkout seguro"],
         pend: "prazo e garantia",
-        img: "f5-pack",
-        f: [
-          { i: "lock", b: "Pagamento", s: "Checkout seguro" },
-          { i: "truck", b: "— dias", s: "Prazo de entrega", pend: 1 },
-        ],
+        stage: {
+          img: "f5-pack",
+          kind: "steps",
+          title: "Do clique à entrega",
+          items: [{ b: "Pagamento direto no checkout seguro" }, { b: "Você acompanha o envio" }],
+        },
       },
     ],
     mechTitle: "Flotação: a sujeira sobe e sai",
@@ -435,23 +471,36 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "O Lavix entra no final da lavagem, no tecido ainda úmido, e segue para a secadora. Ou é borrifado no tecido seco, antes de dobrar.",
         proof: ["Etapa final"],
         pend: "horas de fixação no teste",
-        img: "lx-pack",
-        f: [
-          { i: "sparkle", b: "— h", s: "de perfume no tecido", pend: 1 },
-          { i: "drop", b: "Etapa final", s: "Depois do enxágue" },
-        ],
+        stage: {
+          img: "lx-pour-laundry",
+          scene: true,
+          kind: "steps",
+          title: "Onde o Lavix entra",
+          items: [
+            { b: "A roupa sai limpa da lavagem" },
+            { b: "A fragrância se distribui na fibra" },
+            { b: "O perfume fica depois de secar" },
+          ],
+        },
       },
       {
         q: "Vai manchar minha roupa?",
         h: "Indicado para algodão e mistos",
         p: "O rótulo indica uso em tecidos de algodão e tecidos mistos de cama, mesa e banho. Na primeira vez, teste numa parte escondida da peça.",
         proof: ["Algodão", "Tecidos mistos"],
-        img: "lx-towels",
-        scene: true,
-        f: [
-          { i: "tile", b: "Algodão", s: "E tecidos mistos" },
-          { i: "sparkle", b: "Cama e banho", s: "Lençóis e toalhas" },
-        ],
+        stage: {
+          img: "lx-towels",
+          scene: true,
+          kind: "tags",
+          title: "Tecidos indicados no rótulo",
+          items: [
+            { b: "Algodão" },
+            { b: "Tecidos mistos" },
+            { b: "Cama" },
+            { b: "Mesa" },
+            { b: "Banho" },
+          ],
+        },
       },
       {
         q: "Quanto rende um frasco?",
@@ -459,23 +508,31 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "Como é um finalizador concentrado, a dose por quilo de roupa é pequena. Na caixa, o custo por litro cai ainda mais.",
         proof: ["Concentrado"],
         pend: "dose por kg de roupa",
-        img: "lx-pack",
-        f: [
-          { i: "coin", b: "— kg", s: "de roupa por litro", pend: 1 },
-          { i: "drop", b: "— ml", s: "por kg de roupa", pend: 1 },
-        ],
+        stage: {
+          img: "lx-pack",
+          kind: "spec",
+          title: "Concentrado",
+          items: [
+            { b: "Dose pequena", s: "Por quilo de roupa" },
+            { b: "Caixa", s: "O custo por litro cai ainda mais" },
+          ],
+        },
       },
       {
         q: "Posso confiar na marca?",
         h: "Fábrica certificada ISO 9001",
         p: "A Perol tem certificação ISO 9001 e uma divisão inteira dedicada a lavanderia, além de hotelaria e área hospitalar.",
         proof: ["ISO 9001", "Divisão lavanderia"],
-        img: "lx-machines",
-        scene: true,
-        f: [
-          { i: "shield", b: "ISO 9001", s: "Gestão de qualidade" },
-          { i: "factory", b: "13 divisões", s: "Incluindo lavanderia" },
-        ],
+        stage: {
+          img: "lx-machines",
+          scene: true,
+          kind: "spec",
+          title: "Quem fabrica",
+          items: [
+            { b: "ISO 9001", s: "Gestão de qualidade" },
+            { b: "13 divisões", s: "Incluindo lavanderia" },
+          ],
+        },
       },
       {
         q: "E se der problema com o pedido?",
@@ -483,11 +540,12 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "Você paga direto no checkout seguro e acompanha o envio. Prazo de entrega e garantia aparecem aqui antes da compra.",
         proof: ["Checkout seguro"],
         pend: "prazo e garantia",
-        img: "lx-pack",
-        f: [
-          { i: "lock", b: "Pagamento", s: "Checkout seguro" },
-          { i: "truck", b: "— dias", s: "Prazo de entrega", pend: 1 },
-        ],
+        stage: {
+          img: "lx-pack",
+          kind: "steps",
+          title: "Do clique à entrega",
+          items: [{ b: "Pagamento direto no checkout seguro" }, { b: "Você acompanha o envio" }],
+        },
       },
     ],
     mechTitle: "Perfume que fica na fibra",
