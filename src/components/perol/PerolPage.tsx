@@ -24,6 +24,7 @@ import {
 } from "./sections";
 import { Button } from "@/components/ui/button";
 import { ProductGallery } from "./ProductGallery";
+import { UseRing } from "./UseRing";
 import { ProductSelector, KitSelector, ProductFaq, ReviewFilter } from "./controls";
 
 export function PerolPage() {
@@ -617,6 +618,21 @@ export function PerolPage() {
               <p>Role a tela. Cada dúvida comum sobre o produto tem a resposta logo abaixo.</p>
             </div>
             <Objections key={productId} product={product} />
+          </div>
+        </section>
+
+        <section className="sec use" id="em-uso" style={{ paddingTop: "0" }}>
+          <div className="wrap">
+            <div className="sec-head center rv">
+              <span className="eyebrow">Em uso</span>
+              <h2>{product.useTitle ?? "Fotos de uso"}</h2>
+            </div>
+            <UseRing
+              key={productId}
+              name={product.name}
+              gallery={product.gallery}
+              captions={product.photos}
+            />
           </div>
         </section>
 

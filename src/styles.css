@@ -762,14 +762,16 @@ p {
   object-fit: cover;
   user-select: none;
 }
-.main-img .progress {
+.main-img .progress,
+.use-ring .progress {
   height: 3px;
   margin-top: 12px;
   border-radius: 999px;
   background: var(--line);
   overflow: hidden;
 }
-.main-img .progress span {
+.main-img .progress span,
+.use-ring .progress span {
   display: block;
   height: 100%;
   background: var(--navy);
@@ -1837,6 +1839,93 @@ p {
   backdrop-filter: blur(4px);
   padding: 8px 10px;
   border-radius: 10px;
+}
+
+/* ===== anel 3D de fotos de uso ===== */
+/* Cada slide recebe --d (distância ao centro, -3..3) e --a (|d|) do Embla; o 3D é só CSS. */
+.use-ring {
+  --ang: 22deg;
+  --slide: 24%;
+  position: relative;
+  max-width: 100%;
+}
+.use-ring-track {
+  perspective: 1100px;
+  /* folga vertical: a foto central cresce e a sombra não deve ser cortada pelo overflow do viewport */
+  padding-block: 20px;
+}
+.use-ring-slide {
+  flex: 0 0 var(--slide);
+  padding: 0 6px;
+  opacity: calc(1 - var(--a) * 0.28);
+  transform: rotateY(calc(var(--d) * var(--ang) * -1)) translateZ(calc(var(--a) * -70px))
+    scale(calc(1 - var(--a) * 0.06));
+}
+.use-ring[data-dragging="true"] .use-ring-slide {
+  will-change: transform, opacity;
+}
+.use-ring-slide button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  aspect-ratio: 3/4;
+  background: var(--snow);
+  cursor: pointer;
+  box-shadow: 0 14px 30px -18px var(--ink);
+}
+.use-ring-slide button[aria-current="true"] {
+  cursor: default;
+  border-color: var(--navy);
+}
+.use-ring-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.use-ring-caption {
+  min-height: 1.6em;
+  margin-top: 6px;
+  text-align: center;
+  font: 700 14px/1.4 var(--body);
+  color: var(--navy);
+}
+.use-ring .progress {
+  max-width: 320px;
+  margin-inline: auto;
+}
+.use-ring-empty {
+  text-align: center;
+}
+/* Movimento reduzido (CSS e atributo data-3d do componente): sem rotação nem profundidade,
+   só fade pela distância ao centro. */
+.use-ring[data-3d="false"] .use-ring-track {
+  perspective: none;
+}
+.use-ring[data-3d="false"] .use-ring-slide {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .use-ring-track {
+    perspective: none;
+  }
+  .use-ring-slide {
+    transform: none;
+  }
+}
+/* Mobile: ângulo menor, 3 fotos visíveis e sombra leve */
+@media (max-width: 640px) {
+  .use-ring {
+    --ang: 14deg;
+    --slide: 44%;
+  }
+  .use-ring-slide button {
+    box-shadow: none;
+  }
 }
 
 /* ===== marcas ===== */
