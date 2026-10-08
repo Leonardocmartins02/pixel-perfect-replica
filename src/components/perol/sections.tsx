@@ -7,6 +7,7 @@ import {
   type ProductId,
 } from "@/content/flotador";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { img, money } from "./format";
@@ -334,5 +335,55 @@ export function Reviews({ product, filter }: { product: ProductContent; filter: 
         </article>
       ))}
     </>
+  );
+}
+
+/** Passos do mecanismo: cada cartão abre um popup com o detalhe (hover/foco no desktop, toque no celular). */
+export function MechSteps({ steps }: { steps: { b: string; p: string }[] }) {
+  const [open, setOpen] = useState<number | null>(null);
+  const mouse = useRef(false);
+  return (
+    <ol className="mech-steps" id="mechSteps">
+      {steps.map((step, i) => (
+        <li key={step.b} className="rv" style={{ "--i": i } as CSSProperties}>
+          <Popover open={open === i} onOpenChange={(value) => setOpen(value ? i : null)}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="mech-card"
+                onPointerEnter={(e) => {
+                  mouse.current = e.pointerType === "mouse";
+                  if (mouse.current) setOpen(i);
+                }}
+                onPointerLeave={() => mouse.current && setOpen(null)}
+                // com mouse o popup já abriu no hover: o clique não deve fechá-lo
+                onClick={(e) => mouse.current && open === i && e.preventDefault()}
+              >
+                <span className="mech-n" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <b>{step.b}</b>
+                <span className="mech-more" aria-hidden="true">
+                  +
+                </span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="mech-pop"
+              side="bottom"
+              align="start"
+              sideOffset={8}
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+              <span className="mech-pop-step">
+                Passo {i + 1} de {steps.length}
+              </span>
+              <b>{step.b}</b>
+              <p>{step.p}</p>
+            </PopoverContent>
+          </Popover>
+        </li>
+      ))}
+    </ol>
   );
 }

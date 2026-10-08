@@ -135,6 +135,14 @@ describe("Página importada do modelo Perol", () => {
     const kids = [...container.querySelector("#comprar .info")!.children].map(
       (el) => el.className || el.tagName,
     );
-    expect(kids.slice(0, 4)).toEqual(["rating-row", "H1", "sub", "ticks"]);
+    expect(kids.slice(0, 5)).toEqual(["rating-row", "H1", "eyebrow desc-title", "sub", "ticks"]);
+  });
+  it("cada passo do mecanismo abre um popup com o detalhe ao clicar", async () => {
+    const user = userEvent.setup();
+    render(<PerolPage />);
+    const passo = screen.getByRole("button", { name: /Os tensoativos chegam na sujeira/ });
+    expect(screen.queryByText(/lado que se liga à gordura/)).not.toBeInTheDocument();
+    await user.click(passo);
+    expect(await screen.findByText(/lado que se liga à gordura/)).toBeInTheDocument();
   });
 });
