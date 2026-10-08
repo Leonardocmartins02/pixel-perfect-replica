@@ -14,7 +14,6 @@ import { getOfferReadiness } from "@/lib/offer";
 import {
   Sym,
   Pending,
-  KitOption,
   OfferCard,
   Objections,
   Mechanism,
@@ -23,6 +22,9 @@ import {
   Comparison,
   Reviews,
 } from "./sections";
+import { Button } from "@/components/ui/button";
+import { ProductSelector, KitSelector, ProductFaq, ReviewFilter } from "./controls";
+
 export function PerolPage() {
   const [productId, setProductId] = useState<ProductId>("f5");
   const [kit, setKit] = useState<KitId>("cx6");
@@ -31,7 +33,6 @@ export function PerolPage() {
   const [toast, setToast] = useState("");
   const [sticky, setSticky] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
-  const pillRef = useRef<HTMLSpanElement>(null);
   const touchStart = useRef<number | null>(null);
   const product = PRODUCTS[productId];
   const selectedKit = KITS.find((item) => item.id === kit)!;
@@ -94,11 +95,6 @@ export function PerolPage() {
     const page = pageRef.current;
     if (!page) return;
     const position = () => {
-      const selected = page.querySelector<HTMLElement>(`.switch button[data-p="${productId}"]`);
-      if (selected && pillRef.current) {
-        pillRef.current.style.left = `${selected.offsetLeft}px`;
-        pillRef.current.style.width = `${selected.offsetWidth}px`;
-      }
       const hero = page.querySelector("#comprar")?.getBoundingClientRect();
       const offers = page.querySelector("#kits-final")?.getBoundingClientRect();
       if (hero && offers)
@@ -419,28 +415,10 @@ export function PerolPage() {
               profissional
             </small>
           </a>
-          <div className="switch" role="group" aria-label="Escolher produto">
-            <span className="pill" aria-hidden="true" ref={pillRef}></span>
-            <button
-              type="button"
-              data-p="f5"
-              aria-pressed={productId === "f5"}
-              onClick={() => selectProduct("f5")}
-            >
-              <i></i>F5 Flotador
-            </button>
-            <button
-              type="button"
-              data-p="lx"
-              aria-pressed={productId === "lx"}
-              onClick={() => selectProduct("lx")}
-            >
-              <i></i>Lavix
-            </button>
-          </div>
-          <a className="btn btn-navy btn-sm" href="#comprar">
-            Comprar
-          </a>
+          <ProductSelector value={productId} onChange={selectProduct} />
+          <Button asChild className="btn btn-navy btn-sm">
+            <a href="#comprar">Comprar</a>
+          </Button>
         </div>
       </header>
 
@@ -450,7 +428,10 @@ export function PerolPage() {
             <div className="gallery">
               <div className="thumbs" id="thumbs">
                 {product.gallery.map((name, i) => (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-auto w-full"
                     key={name}
                     type="button"
                     aria-label={`Ver foto ${i + 1}`}
@@ -458,7 +439,7 @@ export function PerolPage() {
                     onClick={() => setImageIndex(i)}
                   >
                     <img src={img(name)} alt="" loading="lazy" />
-                  </button>
+                  </Button>
                 ))}
               </div>
               <div
@@ -590,18 +571,7 @@ export function PerolPage() {
                 <b>Escolha seu kit</b>
                 <span className="pend">preços</span>
               </div>
-              <fieldset className="kits" id="kits">
-                <legend className="sr">Kit</legend>
-                {KITS.map((item) => (
-                  <KitOption
-                    key={item.id}
-                    item={item}
-                    productId={productId}
-                    selected={kit}
-                    onSelect={setKit}
-                  />
-                ))}
-              </fieldset>
+              <KitSelector value={kit} productId={productId} onChange={setKit} />
 
               <div className="buyline">
                 <div className="total">
@@ -610,12 +580,12 @@ export function PerolPage() {
                   </span>
                   <b id="totalPrice">{money(PRICES[productId][kit])}</b>
                 </div>
-                <button className="btn btn-buy" type="button" data-buy="" onClick={() => buy(kit)}>
+                <Button className="btn btn-buy" type="button" data-buy="" onClick={() => buy(kit)}>
                   Comprar agora{" "}
                   <svg>
                     <use href="#i-arrow"></use>
                   </svg>
-                </button>
+                </Button>
                 <div className="assure">
                   <div>
                     <svg>
@@ -870,18 +840,7 @@ export function PerolPage() {
                 <span className="pend">média e total de avaliações reais</span>
               </div>
             </div>
-            <div className="filters" id="filters">
-              {product.filters.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  aria-pressed={filter === label}
-                  onClick={() => setFilter(label)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <ReviewFilter items={product.filters} value={filter} onChange={setFilter} />
             <div className="reviews" id="reviews">
               <Reviews product={product} filter={filter} />
             </div>
@@ -953,23 +912,16 @@ export function PerolPage() {
               <span className="eyebrow">Dúvidas</span>
               <h2>Perguntas frequentes</h2>
               <p>Respostas tiradas do rótulo. As pendentes dependem da operação.</p>
-              <a className="btn btn-navy" href="#comprar" style={{ justifySelf: "start" }}>
-                Escolher meu kit{" "}
-                <svg>
-                  <use href="#i-arrow"></use>
-                </svg>
-              </a>
+              <Button asChild className="btn btn-navy" style={{ justifySelf: "start" }}>
+                <a href="#comprar">
+                  Escolher meu kit{" "}
+                  <svg>
+                    <use href="#i-arrow"></use>
+                  </svg>
+                </a>
+              </Button>
             </div>
-            <div id="faqList" className="swap">
-              {product.faq.map((item, i) => (
-                <details key={item.q} open={i === 0 ? true : undefined}>
-                  <summary>{item.q}</summary>
-                  <div className="a">
-                    {item.a ? <span>{item.a}</span> : <Pending>{item.p}</Pending>}
-                  </div>
-                </details>
-              ))}
-            </div>
+            <ProductFaq key={productId} product={product} />
           </div>
         </section>
       </main>
@@ -997,14 +949,14 @@ export function PerolPage() {
               {PRICES[productId][kit] === null ? "Preço a definir" : money(PRICES[productId][kit])}
             </span>
           </div>
-          <button
+          <Button
             className="btn btn-navy btn-sm"
             type="button"
             data-buy=""
             onClick={() => buy(kit)}
           >
             Comprar agora
-          </button>
+          </Button>
         </div>
       </div>
       <div className={`toast ${toast ? "show" : ""}`} id="toast" role="status">

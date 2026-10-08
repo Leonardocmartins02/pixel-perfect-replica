@@ -54,3 +54,35 @@ A importação não libera vendas: preencher uma URL e um preço não contorna `
 ## Continuidade local
 
 Após o proprietário conectar o GitHub (Lovable → + → GitHub), clone o repositório, rode `bun install` e `bun run dev`. Commits na branch conectada sincronizam com o Lovable.
+
+## Componentes e tema
+
+O shadcn/ui já está configurado em `components.json`, com os componentes no próprio repositório em `src/components/ui/`. A página usa `Button` nas ações e miniaturas, `ToggleGroup` nos produtos e filtros, `RadioGroup` nos kits, `Accordion` no FAQ e `Slider` nos comparadores. Os componentes podem ser personalizados sem clonar o repositório completo do shadcn.
+
+O tema `.perol-page` mapeia a paleta recebida para os tokens semânticos do shadcn (`primary`, `background`, `muted`, `border`, `ring`). A troca para Lavix atualiza a cor de destaque. O token de texto da referência foi renomeado para `--perol-muted`, evitando conflito com a superfície `--muted` do shadcn. Os controles têm foco visível e suporte a teclado.
+
+Referências: [componentes shadcn/ui](https://ui.shadcn.com/docs/components), [tema](https://ui.shadcn.com/docs/theming).
+
+## Branches de trabalho
+
+- `main`: versão estável conectada ao Lovable.
+- `dev`: criada a partir da `main`; desenvolvimento e revisão das próximas mudanças.
+
+Trabalhe em `dev`. Envie com `git push -u origin dev` e, quando a versão estiver aprovada, abra uma PR de `dev` para `main`. O envio à `dev` não atualiza a versão da `main` no Lovable. As branches anteriores não foram removidas.
+
+## 21st MCP (antigo Magic MCP)
+
+A conexão de desenvolvimento está preparada em `.codex/config.toml`, usando `https://21st.dev/api/mcp` e a variável de ambiente `API_KEY_21ST`. Não é uma dependência do site e não vai para o código enviado ao navegador.
+
+Para ativar:
+
+1. Entre em [21st.dev/mcp](https://21st.dev/mcp) e gere uma chave atual.
+2. Defina `API_KEY_21ST` no ambiente que inicia o Codex. Use as configurações de variáveis de ambiente do Windows, ou o ambiente Linux se estiver executando o Codex no WSL. Não coloque a chave no código, no Git, no chat ou em variáveis `VITE_*`.
+3. Abra esta pasta como projeto confiável no Codex e reinicie o cliente para carregar o MCP.
+4. Confira `twenty_first` na lista de servidores MCP (`/mcp` ou `codex mcp list`).
+
+A configuração por projeto depende de o Codex abrir a pasta deste repositório. Ela não configura automaticamente um MCP dentro do Lovable.
+
+A conexão ainda precisa de uma chave e de uma chamada real para confirmar autenticação. Depois de conectar, use `search` e `get_component` para selecionar componentes, conferir licença e adaptar ao tema e aos controles existentes. A geração hospedada depende do acesso da conta; não é necessária para manter o site.
+
+Fontes: [migração oficial Magic → 21st](https://github.com/21st-dev/magic-mcp#readme), [MCP no Codex](https://developers.openai.com/codex/mcp).

@@ -6,6 +6,9 @@ import {
   type ProductContent,
   type ProductId,
 } from "@/content/flotador";
+import { Button } from "@/components/ui/button";
+import { RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
 import { img, money } from "./format";
 import { ICONS, mechanismSvg } from "./illustrations";
 
@@ -28,30 +31,13 @@ function Jugs({ count }: { count: number }) {
     </span>
   );
 }
-export function KitOption({
-  item,
-  productId,
-  selected,
-  onSelect,
-}: {
-  item: PerolKit;
-  productId: ProductId;
-  selected: KitId;
-  onSelect: (id: KitId) => void;
-}) {
+export function KitOption({ item, productId }: { item: PerolKit; productId: ProductId }) {
   const price = PRICES[productId][item.id];
   const base = PRICES[productId].u1;
   const savings = price !== null && base !== null ? base * item.n - price : 0;
   return (
-    <label className="kit">
+    <RadioGroupItem className="kit" value={item.id}>
       {item.flag && <span className={`flag ${item.navy ? "navy" : ""}`}>{item.flag}</span>}
-      <input
-        type="radio"
-        name="kit"
-        value={item.id}
-        checked={selected === item.id}
-        onChange={() => onSelect(item.id)}
-      />
       <Jugs count={item.n} />
       <span className="q">{item.q}</span>
       <span className="d">{item.d}</span>
@@ -60,7 +46,7 @@ export function KitOption({
         {price === null ? "R$ ––/L" : `${money(Math.round(price / item.n))}/L`}
       </span>
       {savings > 0 && <span className="save">economize {money(savings)}</span>}
-    </label>
+    </RadioGroupItem>
   );
 }
 export function OfferCard({
@@ -93,9 +79,9 @@ export function OfferCard({
           </li>
         ))}
       </ul>
-      <button className="btn btn-navy" type="button" onClick={() => onBuy(item.id)}>
+      <Button className="btn btn-navy" type="button" onClick={() => onBuy(item.id)}>
         Comprar {item.title.toLowerCase()} <Sym name="arrow" />
-      </button>
+      </Button>
     </article>
   );
 }
@@ -232,13 +218,15 @@ export function Comparison({ item }: { item: { t: string; s: string } }) {
         <span className="lbl l">ANTES</span>
         <span className="lbl r">DEPOIS</span>
         <div className="handle" />
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={value}
-          onChange={(event) => setValue(Number(event.target.value))}
-          aria-label={`Comparar antes e depois: ${item.t}`}
+        <Slider
+          className="comparison-slider"
+          min={0}
+          max={100}
+          step={1}
+          value={[value]}
+          onValueChange={(values) => setValue(values[0] ?? 50)}
+          thumbLabel={`Comparar antes e depois: ${item.t}`}
+          thumbValueText={`${value}% antes e ${100 - value}% depois`}
         />
       </div>
       <div>

@@ -41,3 +41,11 @@ Landing page for F5 Flotador and Lavix Finalizador, with unit, two-unit and six-
 ## Done checklist
 
 `bun run lint`, `bunx tsc --noEmit`, `bun run test`, `bun run build` pass; page checked at 320/375/768/1440 px with no horizontal overflow; keyboard focus visible.
+
+## Branch and UI workflow
+
+- Develop on `dev`, created from `main`. Keep `main` as the stable Lovable branch; merge reviewed changes through a PR. Do not delete older branches without a specific request.
+- Reuse shadcn components in `src/components/ui/` for interactive controls. Page compositions live in `src/components/perol/controls.tsx`; preserve keyboard interaction and accessible names.
+- Map brand colors through the scoped `.perol-page` semantic theme. `--muted` is a surface color; use `--muted-foreground` for subdued text.
+- The project-scoped 21st MCP connection reads `API_KEY_21ST` from the Codex environment. It is a development tool, not a browser dependency. Do not report it as connected until a tool call succeeds.
+- When 21st is available, search for focused component references and adapt them to the existing shadcn primitives, palette and reduced-motion behavior. Do not publish components or buy generation credits without explicit instruction.
