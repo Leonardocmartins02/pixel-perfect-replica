@@ -173,6 +173,8 @@ export interface ProductContent {
   ba: { t: string; s: string }[];
   /** Título da faixa do anel de fotos de uso; ausente = título genérico. */
   useTitle?: string;
+  /** Nota real, total de avaliações e onde elas estão; ausente = campo "Pendente" (nunca inventar). */
+  rating?: { score: number; count: number; source: string };
   whereTitle: string;
   whereLead: string;
   colA: string;

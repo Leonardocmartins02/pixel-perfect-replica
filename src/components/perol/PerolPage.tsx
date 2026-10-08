@@ -426,31 +426,33 @@ export function PerolPage() {
             />
 
             <div className="info swap">
-              <div className="rating-row">
-                <span className="stars empty">
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                </span>
-                <span>–,– · avaliações reais</span>
-                <span className="pend">nota e nº de avaliações</span>
-              </div>
               <h1>
                 <span data-k="h1a">{product.h1a}</span>
                 <em data-k="h1b">{product.h1b}</em>
               </h1>
+              <div className="rating-row">
+                <span className={`stars ${product.rating ? "" : "empty"}`}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <svg
+                      key={n}
+                      className={
+                        product.rating && n > Math.round(product.rating.score) ? "off" : ""
+                      }
+                    >
+                      <use href="#i-star"></use>
+                    </svg>
+                  ))}
+                </span>
+                <b className="rating-n">
+                  {product.rating ? product.rating.score.toFixed(1).replace(".", ",") : "–,–"}
+                </b>
+                <span className="rating-txt">
+                  {product.rating
+                    ? `${product.rating.count} avaliações · ${product.rating.source}`
+                    : "avaliações reais"}
+                </span>
+                {!product.rating && <span className="pend">nota e nº de avaliações</span>}
+              </div>
               {/* rótulo só no mobile, onde a descrição desce para o fim da coluna e perde o título */}
               <span className="eyebrow desc-title">Descrição</span>
               <p className="sub" data-k="sub">
