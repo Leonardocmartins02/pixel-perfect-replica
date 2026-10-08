@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type TouchEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CHECKOUT,
   DIVS,
@@ -23,22 +23,20 @@ import {
   Reviews,
 } from "./sections";
 import { Button } from "@/components/ui/button";
+import { ProductGallery } from "./ProductGallery";
 import { ProductSelector, KitSelector, ProductFaq, ReviewFilter } from "./controls";
 
 export function PerolPage() {
   const [productId, setProductId] = useState<ProductId>("f5");
   const [kit, setKit] = useState<KitId>("cx6");
-  const [imageIndex, setImageIndex] = useState(0);
   const [filter, setFilter] = useState("Todas");
   const [toast, setToast] = useState("");
   const [sticky, setSticky] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
-  const touchStart = useRef<number | null>(null);
   const product = PRODUCTS[productId];
   const selectedKit = KITS.find((item) => item.id === kit)!;
   const selectProduct = (id: ProductId) => {
     setProductId(id);
-    setImageIndex(0);
     setFilter("Todas");
     setToast("");
     history.replaceState(history.state, "", id === "lx" ? "#lavix" : "#flotador");
@@ -46,17 +44,6 @@ export function PerolPage() {
       top: 0,
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
     });
-  };
-  const swipe = (event: TouchEvent<HTMLDivElement>) => {
-    const end = event.changedTouches[0]?.clientX;
-    const start = touchStart.current;
-    if (start !== null && end !== undefined && Math.abs(end - start) > 40) {
-      const direction = end < start ? 1 : -1;
-      setImageIndex(
-        (index) => (index + direction + product.gallery.length) % product.gallery.length,
-      );
-    }
-    touchStart.current = null;
   };
   const buy = (id: KitId) => {
     setKit(id);
@@ -79,7 +66,6 @@ export function PerolPage() {
       const hash = window.location.hash;
       if (!["#lavix", "#lx", "#flotador", "#f5", ""].includes(hash)) return;
       setProductId(["#lavix", "#lx"].includes(hash) ? "lx" : "f5");
-      setImageIndex(0);
       setFilter("Todas");
     };
     sync();
@@ -425,51 +411,12 @@ export function PerolPage() {
       <main id="topo">
         <section className="pdp" id="comprar">
           <div className="wrap pdp-grid">
-            <div className="gallery">
-              <div className="thumbs" id="thumbs">
-                {product.gallery.map((name, i) => (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-auto w-full"
-                    key={name}
-                    type="button"
-                    aria-label={`Ver foto ${i + 1}`}
-                    aria-current={imageIndex === i ? "true" : "false"}
-                    onClick={() => setImageIndex(i)}
-                  >
-                    <img src={img(name)} alt="" loading="lazy" />
-                  </Button>
-                ))}
-              </div>
-              <div
-                className="main-img"
-                id="mainImg"
-                onTouchStart={(event) => {
-                  touchStart.current = event.touches[0]?.clientX ?? null;
-                }}
-                onTouchEnd={swipe}
-              >
-                {product.gallery.map((name, i) => (
-                  <img
-                    key={name}
-                    src={img(name)}
-                    alt={`${product.name}, foto ${i + 1}`}
-                    className={imageIndex === i ? "on" : ""}
-                    loading={i ? "lazy" : "eager"}
-                  />
-                ))}
-                <div className="tag">
-                  <span className="chip" data-k="chip1">
-                    {product.chip1}
-                  </span>
-                  <span className="chip light">ISO 9001</span>
-                </div>
-                <span className="count" id="imgCount">
-                  {imageIndex + 1} / {product.gallery.length}
-                </span>
-              </div>
-            </div>
+            <ProductGallery
+              key={productId}
+              name={product.name}
+              gallery={product.gallery}
+              chip={product.chip1}
+            />
 
             <div className="info swap">
               <div className="rating-row">

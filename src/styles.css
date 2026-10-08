@@ -704,11 +704,22 @@ p {
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr);
   gap: 12px;
+  /* a altura da linha vem só da foto; sem isso o carrossel esticava até a altura das miniaturas */
+  align-items: start;
 }
 .thumbs {
+  /* coluna do desktop: height 0 + min-height 100% = tem a altura da foto e rola por dentro */
+  height: 0;
+  min-height: 100%;
   display: grid;
+  grid-auto-rows: max-content;
   gap: 10px;
   align-content: start;
+  /* folga p/ o anel de foco não ser cortado pelo overflow da faixa */
+  padding: 3px;
+  margin: -3px;
+  overflow: auto;
+  scrollbar-width: none;
 }
 .thumbs button {
   padding: 0;
@@ -727,30 +738,43 @@ p {
 .thumbs button[aria-current="true"] {
   border-color: var(--navy);
 }
+/* Carrossel Embla: o trilho rola; chips, contador, setas e progresso ficam fixos sobre ele. */
 .main-img {
   position: relative;
+  max-width: 100%;
+}
+.main-img:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+  border-radius: 22px;
+}
+.main-img .slide {
   aspect-ratio: 1/1;
   border-radius: 22px;
   overflow: hidden;
-  background: #fff;
+  background: var(--white);
   border: 1px solid var(--line);
-  max-width: 100%;
 }
-.main-img img {
-  position: absolute;
-  inset: 0;
+.main-img .slide img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-  transform: scale(1.04);
-  transition:
-    opacity 0.55s ease,
-    transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  user-select: none;
 }
-.main-img img.on {
-  opacity: 1;
-  transform: none;
+.main-img .progress {
+  height: 3px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.main-img .progress span {
+  display: block;
+  height: 100%;
+  background: var(--navy);
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 .main-img .tag {
   position: absolute;
@@ -781,13 +805,21 @@ p {
 .main-img .count {
   position: absolute;
   right: 14px;
-  bottom: 14px;
+  /* sobe acima da barra de progresso (3px + 12px de margem) */
+  bottom: 29px;
   z-index: 2;
   font: 600 12px/1 var(--mono);
   background: rgba(11, 26, 58, 0.75);
   color: #fff;
   padding: 6px 9px;
   border-radius: 999px;
+}
+
+/* mobile: a foto ocupa 88% e a próxima espia; o contador fica dentro da foto ativa, não no peek */
+@media (max-width: 640px) {
+  .main-img .count {
+    right: calc(12% + 26px);
+  }
 }
 
 .info {
@@ -2244,9 +2276,19 @@ body.switching .swap {
     top: 0;
     grid-template-columns: minmax(0, 1fr);
   }
+  /* faixa horizontal abaixo da foto; alvo de toque 56px (>= 44). min-width:0 evita que o
+     conteúdo da faixa estique a coluna do grid e cause rolagem horizontal da página */
   .thumbs {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    display: flex;
+    gap: 8px;
     order: 2;
+  }
+  .thumbs button {
+    flex: 0 0 56px;
+    width: 56px;
   }
   .proofbar .wrap {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2329,12 +2371,6 @@ body.switching .swap {
   }
   .kit .pr {
     font-size: 15px;
-  }
-  .thumbs {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-  .thumbs button:nth-child(n + 5) {
-    display: none;
   }
   .icons {
     grid-template-columns: repeat(2, minmax(0, 1fr));
