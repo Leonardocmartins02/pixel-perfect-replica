@@ -160,6 +160,8 @@ export interface ProductContent {
   stats: { v: string; k: string; src: string; real?: boolean }[];
   study: { h: string; p: string; pin: string }[];
   ba: { t: string; s: string }[];
+  /** Título da faixa do anel de fotos de uso; ausente = título genérico. */
+  useTitle?: string;
   whereTitle: string;
   whereLead: string;
   colA: string;
@@ -352,6 +354,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       { t: "Bancada de inox", s: "Marcas e respingos" },
       { t: "Porcelanato de recepção", s: "Sujeira de alto tráfego" },
     ],
+    useTitle: "Do piso ao inox",
     whereTitle: "Do piso ao inox com o mesmo frasco",
     whereLead: "Superfícies e ambientes indicados no rótulo do F5 Flotador Universal.",
     colA: "Superfícies",
