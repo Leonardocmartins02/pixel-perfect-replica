@@ -125,7 +125,7 @@ describe("Página importada do modelo Perol", () => {
 
   it("entrega todo o conteúdo e imagens locais desde a renderização", () => {
     const { container } = render(<PerolPage />);
-    expect(container.querySelectorAll("main section")).toHaveLength(11);
+    expect(container.querySelectorAll("main section")).toHaveLength(12);
     expect(within(container.querySelector("#kits")!).getAllByRole("radio")).toHaveLength(3);
     for (const image of container.querySelectorAll("img"))
       expect(image.getAttribute("src")).toMatch(/^\/img\/.+\.webp$/);
