@@ -880,12 +880,28 @@ p {
   min-width: 0;
 }
 .rating-row {
+  /* avaliação em destaque: cartão logo abaixo do título, no padrão dos cartões do site */
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px 12px;
   flex-wrap: wrap;
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--white);
+  box-shadow: 0 14px 28px -22px rgba(19, 48, 107, 0.5);
   font-size: 14px;
   color: var(--perol-muted);
+}
+.rating-n {
+  font: 900 26px/1 var(--display);
+  color: var(--navy);
+}
+.rating-row .stars svg {
+  width: 20px;
+  height: 20px;
 }
 .stars {
   display: inline-flex;
@@ -895,6 +911,9 @@ p {
 .stars svg {
   width: 17px;
   height: 17px;
+}
+.stars svg.off {
+  color: #d5dce8;
 }
 .stars.empty {
   color: #d5dce8;
