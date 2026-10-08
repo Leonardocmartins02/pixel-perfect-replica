@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { Pause, Play } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -20,6 +21,7 @@ type Props = {
 // Packshots (frasco isolado) ficam de fora: o anel mostra só as fotos de cena de product.gallery.
 const PACKSHOT = /-(pack|close)$/;
 const MAX_D = 3;
+const AUTOPLAY_MS = 2500;
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // Posição contínua de cada slide em relação ao centro (-3..3), lida do Embla durante o arraste.
@@ -45,6 +47,18 @@ export function UseRing({ name, gallery, captions = [] }: Props) {
   const [dragging, setDragging] = useState(false);
   const [flat, setFlat] = useState(false);
   const total = scenes.length;
+  // quem pede menos movimento começa pausado e pode ligar no botão
+  const [playing, setPlaying] = useState(() => !reducedMotion());
+
+  // Passa a foto sozinho (volta à primeira no fim); o timer reinicia a cada troca e espera o arraste acabar.
+  useEffect(() => {
+    if (!api || !playing || dragging || total < 2) return;
+    const timer = window.setTimeout(() => {
+      if (document.hidden) return;
+      api.scrollTo(api.selectedScrollSnap() + 1 >= total ? 0 : api.selectedScrollSnap() + 1);
+    }, AUTOPLAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [api, playing, dragging, index, total]);
 
   useEffect(() => setFlat(reducedMotion()), []);
 
@@ -141,11 +155,29 @@ export function UseRing({ name, gallery, captions = [] }: Props) {
         aria-label="Próxima foto de uso"
         className="right-3 h-10 w-10 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-[980px]:hidden"
       />
-      <p className="use-ring-caption" aria-live="polite">
+      <p
+        className="use-ring-caption chip light"
+        aria-live="polite"
+        data-empty={caption ? "false" : "true"}
+      >
         {caption ?? ""}
       </p>
-      <div className="progress" aria-hidden="true">
-        <span style={{ transform: `scaleX(${(index + 1) / total})` }} />
+      <div className="use-ring-bar">
+        <button
+          type="button"
+          className="pp"
+          aria-label={playing ? "Pausar fotos de uso" : "Reproduzir fotos de uso"}
+          aria-pressed={!playing}
+          onClick={() => setPlaying((value) => !value)}
+        >
+          {playing ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+        </button>
+        <div className="progress" aria-hidden="true">
+          <span style={{ transform: `scaleX(${(index + 1) / total})` }} />
+        </div>
+        <span className="count">
+          {index + 1} / {total}
+        </span>
       </div>
     </Carousel>
   );

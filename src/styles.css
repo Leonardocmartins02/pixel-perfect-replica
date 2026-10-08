@@ -699,14 +699,26 @@ p {
   align-items: start;
 }
 .gallery {
-  position: sticky;
-  /* centraliza na área abaixo do header; --gh (altura da galeria) vem do ProductGallery */
-  top: max(calc(var(--hdr) + 20px), calc((100svh + var(--hdr) - var(--gh, 0px)) / 2));
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr);
   gap: 12px;
   /* a altura da linha vem só da foto; sem isso o carrossel esticava até a altura das miniaturas */
   align-items: start;
+}
+/* desktop: a galeria acompanha a rolagem e fica centralizada na área abaixo do header,
+   como o palco das dúvidas. Abaixo de 980px ela volta ao fluxo normal. */
+@media (min-width: 981px) {
+  .gallery-wrap {
+    position: sticky;
+    top: var(--hdr);
+    height: calc(100svh - var(--hdr));
+    display: flex;
+    align-items: center;
+    align-self: start;
+  }
+  .gallery-wrap > .gallery {
+    width: 100%;
+  }
 }
 .thumbs {
   /* coluna do desktop: height 0 + min-height 100% = tem a altura da foto e rola por dentro */
@@ -816,7 +828,8 @@ p {
   gap: 6px;
 }
 .main-img .count,
-.main-img .pp {
+.main-img .pp,
+.use-ring .pp {
   background: rgba(11, 26, 58, 0.75);
   color: #fff;
   border-radius: 999px;
@@ -825,22 +838,30 @@ p {
   font: 600 12px/1 var(--mono);
   padding: 6px 9px;
 }
-.main-img .pp {
+.main-img .pp,
+.use-ring .pp {
   display: grid;
   place-items: center;
   width: 26px;
   height: 26px;
 }
 /* alvo de toque de 44px sem aumentar o botão visível */
-.main-img .pp {
+.main-img .pp,
+.use-ring .pp {
   position: relative;
 }
-.main-img .pp::after {
+.use-ring .pp {
+  background: var(--navy);
+  flex: none;
+}
+.main-img .pp::after,
+.use-ring .pp::after {
   content: "";
   position: absolute;
   inset: -9px;
 }
-.main-img .pp svg {
+.main-img .pp svg,
+.use-ring .pp svg {
   width: 12px;
   height: 12px;
   fill: currentColor;
@@ -968,6 +989,9 @@ p {
 }
 .kit-title b {
   font: 800 15px/1 var(--body);
+}
+.desc-title {
+  display: none;
 }
 .kits {
   display: grid;
@@ -1525,30 +1549,112 @@ p {
   counter-reset: m;
 }
 .mech-steps li {
-  display: grid;
-  grid-template-columns: 44px 1fr;
-  gap: 14px;
-  align-items: start;
+  transition-delay: calc(var(--i, 0) * 0.14s);
 }
-.mech-steps li::before {
-  counter-increment: m;
-  content: counter(m);
+.mech-card {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px 1fr 28px;
+  gap: 14px;
+  align-items: center;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--white);
+  color: var(--navy);
+  cursor: pointer;
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.25s,
+    border-color 0.25s;
+}
+.mech-card b {
+  font-size: 17px;
+  line-height: 1.25;
+}
+.mech-n {
   width: 44px;
   height: 44px;
   border-radius: 12px;
   background: var(--navy-tint);
-  color: var(--navy);
   font: 900 22px/44px var(--display);
   text-align: center;
+  transition:
+    background 0.25s,
+    color 0.25s;
 }
-.mech-steps b {
+.mech-more {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--navy-tint);
+  font: 700 18px/28px var(--mono);
+  text-align: center;
+  transition:
+    transform 0.3s,
+    background 0.25s,
+    color 0.25s;
+}
+.mech-card:hover,
+.mech-card:focus-visible,
+.mech-card[data-state="open"] {
+  transform: translateY(-3px);
+  border-color: var(--navy);
+  box-shadow: 0 18px 34px -22px rgba(19, 48, 107, 0.55);
+}
+.mech-card:hover .mech-n,
+.mech-card:focus-visible .mech-n,
+.mech-card[data-state="open"] .mech-n,
+.mech-card:hover .mech-more,
+.mech-card:focus-visible .mech-more,
+.mech-card[data-state="open"] .mech-more {
+  background: var(--navy);
+  color: #fff;
+}
+.mech-card[data-state="open"] .mech-more {
+  transform: rotate(45deg);
+}
+/* o popup sai do portal, fora da seção: usa só tokens de :root */
+.mech-pop {
+  width: min(320px, calc(100vw - 32px));
+  border: 1px solid var(--navy);
+  border-radius: var(--r);
+  background: var(--white);
+  box-shadow: 0 24px 48px -24px rgba(19, 48, 107, 0.6);
+  padding: 16px 18px;
+  color: var(--ink);
+}
+.mech-pop-step {
   display: block;
-  font-size: 17px;
+  margin-bottom: 6px;
+  font: 700 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--perol-muted);
+}
+.mech-pop b {
+  display: block;
+  font-size: 16px;
   color: var(--navy);
 }
-.mech-steps p {
-  color: var(--perol-muted);
+.mech-pop p {
+  margin: 6px 0 0;
   font-size: 15px;
+  color: var(--perol-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mech-card,
+  .mech-n,
+  .mech-more {
+    transition: none;
+  }
+  .mech-card:hover,
+  .mech-card:focus-visible,
+  .mech-card[data-state="open"] {
+    transform: none;
+  }
 }
 
 /* ===== dados ===== */
@@ -1986,15 +2092,32 @@ p {
   user-select: none;
 }
 .use-ring-caption {
-  min-height: 1.6em;
-  margin-top: 6px;
-  text-align: center;
-  font: 700 14px/1.4 var(--body);
-  color: var(--navy);
+  /* pílula do mesmo padrão dos chips do hero (mono, caixa alta), centralizada sob as fotos */
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 29px;
+  margin: 8px auto 0;
+  justify-content: center;
 }
-.use-ring .progress {
-  max-width: 320px;
-  margin-inline: auto;
+.use-ring-caption[data-empty="true"] {
+  visibility: hidden;
+}
+.use-ring-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 360px;
+  margin: 14px auto 0;
+}
+.use-ring-bar .progress {
+  flex: 1;
+  margin: 0;
+  max-width: none;
+}
+.use-ring .count {
+  font: 600 12px/1 var(--mono);
+  color: var(--navy);
 }
 .use-ring-empty {
   text-align: center;
@@ -2536,9 +2659,16 @@ body.switching .swap {
   }
   /* fluxo de compra primeiro: nota e título ficam onde estão; descrição e checks descem para o
      fim da coluna. Só visual: o DOM não muda, então leitor de tela e Tab seguem a ordem original */
+  .info .desc-title,
   .info .sub,
   .info .ticks {
     order: 2;
+  }
+  .info .desc-title {
+    display: inline-flex;
+    justify-self: start;
+    /* o rótulo cola na descrição: o gap de 20px do grid fica só entre blocos */
+    margin-bottom: -8px;
   }
 }
 @media (max-width: 560px) {

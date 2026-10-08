@@ -17,6 +17,7 @@ import {
   OfferCard,
   Objections,
   Mechanism,
+  MechSteps,
   SurfaceIcons,
   Stats,
   Comparison,
@@ -450,6 +451,8 @@ export function PerolPage() {
                 <span data-k="h1a">{product.h1a}</span>
                 <em data-k="h1b">{product.h1b}</em>
               </h1>
+              {/* rótulo só no mobile, onde a descrição desce para o fim da coluna e perde o título */}
+              <span className="eyebrow desc-title">Descrição</span>
               <p className="sub" data-k="sub">
                 {product.sub}
               </p>
@@ -652,16 +655,7 @@ export function PerolPage() {
                 <h2 data-k="mechTitle">{product.mechTitle}</h2>
                 <p data-k="mechLead">{product.mechLead}</p>
               </div>
-              <ol className="mech-steps rv" id="mechSteps">
-                {product.mech.map((step) => (
-                  <li key={step.b}>
-                    <div>
-                      <b>{step.b}</b>
-                      <p>{step.p}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              <MechSteps steps={product.mech} />
             </div>
           </div>
         </section>

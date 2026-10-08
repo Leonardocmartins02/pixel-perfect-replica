@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PerolPage } from "@/components/perol/PerolPage";
 import { UseRing } from "@/components/perol/UseRing";
@@ -91,5 +91,23 @@ describe("Anel 3D de fotos de uso", () => {
     render(<PerolPage />);
     fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
     expect(within(ring()).getAllByRole("img")).toHaveLength(cenas(PRODUCTS.lx.gallery).length);
+  });
+  it("passa as fotos sozinho a cada 2,5 s e o botão de pausa interrompe", () => {
+    vi.useFakeTimers();
+    try {
+      render(<PerolPage />);
+      const botoes = within(ring()).getAllByRole("button", { name: /Ver foto de uso/ });
+      const antes = botoes.indexOf(ativa());
+      act(() => void vi.advanceTimersByTime(2600));
+      expect(botoes.indexOf(ativa())).toBe(antes + 1);
+      fireEvent.click(within(ring()).getByRole("button", { name: "Pausar fotos de uso" }));
+      act(() => void vi.advanceTimersByTime(8000));
+      expect(botoes.indexOf(ativa())).toBe(antes + 1);
+      fireEvent.click(within(ring()).getByRole("button", { name: "Reproduzir fotos de uso" }));
+      act(() => void vi.advanceTimersByTime(2600));
+      expect(botoes.indexOf(ativa())).toBe(antes + 2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
