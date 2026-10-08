@@ -1,0 +1,5 @@
+# 21st MCP (formerly Magic MCP). Requires a current key from https://21st.dev/mcp.
+# Set API_KEY_21ST in the environment that launches Codex; do not put the value here.
+[mcp_servers.twenty_first]
+url = "https://21st.dev/api/mcp"
+env_http_headers = { "x-api-key" = "API_KEY_21ST" }

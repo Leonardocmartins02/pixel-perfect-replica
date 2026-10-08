@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
 import { PerolPage } from "@/components/perol/PerolPage";
 import { CHECKOUT, PRICES } from "@/content/flotador";
 
@@ -9,6 +10,7 @@ beforeEach(() => {
     "ResizeObserver",
     class {
       observe() {}
+      unobserve() {}
       disconnect() {}
     },
   );
@@ -28,7 +30,7 @@ describe("Página importada do modelo Perol", () => {
       "aria-current",
       "true",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Lavix" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("LavixFinalizador");
     expect(screen.getByText("Em quais tecidos posso usar?")).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: /1 un\./ })).toBeChecked();
@@ -41,7 +43,7 @@ describe("Página importada do modelo Perol", () => {
 
   it("mantém Lavix ao navegar para uma seção e permite avançar por gesto", () => {
     const { container } = render(<PerolPage />);
-    fireEvent.click(screen.getByRole("button", { name: "Lavix" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
     window.history.replaceState(null, "", "/#comprar");
     fireEvent(window, new HashChangeEvent("hashchange"));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("LavixFinalizador");
@@ -82,8 +84,54 @@ describe("Página importada do modelo Perol", () => {
   it("atualiza o comparador por controle acessível", () => {
     render(<PerolPage />);
     const slider = screen.getByRole("slider", { name: /Piso de cozinha industrial/ });
-    fireEvent.change(slider, { target: { value: "75" } });
-    expect(slider.parentElement?.style.getPropertyValue("--x")).toBe("75%");
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+    expect(slider).toHaveAttribute("aria-valuenow", "51");
+    expect(slider).toHaveAttribute("aria-valuetext", "51% antes e 49% depois");
+    expect(slider.closest(".compare")?.getAttribute("style")).toContain("--x: 51%");
+    fireEvent.keyDown(slider, { key: "End" });
+    expect(slider).toHaveAttribute("aria-valuenow", "100");
+    fireEvent.keyDown(slider, { key: "Home" });
+    expect(slider).toHaveAttribute("aria-valuenow", "0");
+  });
+
+  it("seleciona kits pelas setas do teclado", async () => {
+    const user = userEvent.setup();
+    render(<PerolPage />);
+    const one = screen.getByRole("radio", { name: /1 un\./ });
+    const two = screen.getByRole("radio", { name: /2 un\./ });
+    await user.click(one);
+    // Radix schedules roving focus; keep the key held until that focus event runs.
+    await user.keyboard("{ArrowRight>}");
+    await waitFor(() => expect(two).toBeChecked());
+    expect(two).toHaveFocus();
+    await user.keyboard("{/ArrowRight}");
+  });
+
+  it("abre FAQ pelo teclado e mantém a associação entre pergunta e resposta", async () => {
+    const user = userEvent.setup();
+    render(<PerolPage />);
+    const question = screen.getByRole("button", { name: "Precisa diluir?" });
+    expect(question).toHaveAttribute("aria-expanded", "false");
+    question.focus();
+    await user.keyboard("{Enter}");
+    expect(question).toHaveAttribute("aria-expanded", "true");
+    const answer = document.getElementById(question.getAttribute("aria-controls")!);
+    expect(answer).toHaveTextContent("diluição recomendada");
+    await user.keyboard("{Enter}");
+    expect(question).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("mantém um produto selecionado e alterna usando o teclado", async () => {
+    const user = userEvent.setup();
+    render(<PerolPage />);
+    const first = screen.getByRole("radio", { name: "F5 Flotador" });
+    await user.click(first);
+    expect(first).toBeChecked();
+    await user.keyboard("{ArrowRight}");
+    await waitFor(() => expect(screen.getByRole("radio", { name: "Lavix" })).toHaveFocus());
+    await user.keyboard(" ");
+    expect(screen.getByRole("radio", { name: "Lavix" })).toBeChecked();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("LavixFinalizador");
   });
 
   it("entrega todo o conteúdo e imagens locais desde a renderização", () => {
