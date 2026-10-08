@@ -8,6 +8,65 @@ import { RadioGroup } from "@/components/ui/radio-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { KITS, type KitId, type ProductContent, type ProductId } from "@/content/flotador";
 import { KitOption, Pending } from "./sections";
+import { Pause, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+
+/** The same touch targets, progress and ordering across all product carousels. */
+export function CarouselNavigation({
+  index,
+  total,
+  previous,
+  next,
+  label,
+  counterId,
+  playback,
+}: {
+  index: number;
+  total: number;
+  previous: string;
+  next: string;
+  label: string;
+  counterId?: string;
+  playback?: { playing: boolean; onToggle: () => void; pause: string; play: string };
+}) {
+  return (
+    <div className="carousel-navigation">
+      <div className="carousel-position">
+        <span className="carousel-label">{label}</span>
+        <div className="progress" aria-hidden="true">
+          <span style={{ transform: `scaleX(${(index + 1) / total})` }} />
+        </div>
+        <span
+          className="count"
+          id={counterId}
+          aria-live={playback?.playing ? "off" : "polite"}
+          aria-atomic="true"
+        >
+          {index + 1} / {total}
+        </span>
+      </div>
+      <div className="carousel-actions">
+        {playback && (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="carousel-control"
+            data-carousel-playback
+            aria-label={playback.playing ? playback.pause : playback.play}
+            aria-pressed={!playback.playing}
+            onClick={playback.onToggle}
+          >
+            {playback.playing ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+          </Button>
+        )}
+        <CarouselPrevious className="carousel-control static translate-y-0" aria-label={previous} />
+        <CarouselNext className="carousel-control static translate-y-0" aria-label={next} />
+      </div>
+    </div>
+  );
+}
 
 export function ProductSelector({
   value,
@@ -66,12 +125,28 @@ export function KitSelector({
 
 export function ProductFaq({ product }: { product: ProductContent }) {
   return (
-    <Accordion type="multiple" defaultValue={["faq-0"]} id="faqList" className="swap">
+    <Accordion
+      type="single"
+      collapsible
+      defaultValue="faq-0"
+      id="faqList"
+      className="perol-faq-list"
+    >
       {product.faq.map((item, index) => (
-        <AccordionItem key={item.q} value={`faq-${index}`} className="perol-faq-item">
-          <AccordionTrigger className="perol-faq-trigger">{item.q}</AccordionTrigger>
+        <AccordionItem key={item.q} value={`faq-${index}`} className="perol-faq-item rv">
+          <AccordionTrigger className="perol-faq-trigger">
+            <span>{item.q}</span>
+            <span className="faq-toggle" aria-hidden="true" />
+          </AccordionTrigger>
           <AccordionContent className="perol-faq-answer">
-            {item.a ? <span>{item.a}</span> : <Pending>{item.p}</Pending>}
+            {item.a ? (
+              <p>{item.a}</p>
+            ) : (
+              <div className="faq-pending">
+                <Pending>Pendente</Pending>
+                <p>Informação a confirmar: {item.p}.</p>
+              </div>
+            )}
           </AccordionContent>
         </AccordionItem>
       ))}

@@ -180,7 +180,7 @@ export interface ProductContent {
   colA: string;
   iconsA: [string, string][];
   iconsB: [string, string][];
-  photos: [string, string][];
+  photos: [file: string, label: string, description?: string, icon?: string][];
   filters: string[];
   faq: { q: string; a?: string; p?: string }[];
 }
@@ -413,10 +413,10 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       ["condo", "Condomínios"],
     ],
     photos: [
-      ["f5-lobby", "Recepções e halls"],
-      ["f5-mop", "Pisos de alto tráfego"],
-      ["f5-steel", "Cozinhas industriais"],
-      ["f5-counter", "Casa e escritório"],
+      ["f5-lobby", "Recepções e halls", "Áreas de recepção e circulação.", "hotel"],
+      ["f5-mop", "Pisos de alto tráfego", "Rotina de limpeza de pisos.", "tile"],
+      ["f5-steel", "Cozinhas industriais", "Superfícies laváveis na cozinha.", "kitchen"],
+      ["f5-counter", "Casa e escritório", "Cuidados com os ambientes do dia a dia.", "home"],
     ],
     filters: ["Todas", "Hotel", "Condomínio", "Restaurante", "Casa", "Empresa de limpeza"],
     faq: [
@@ -616,10 +616,10 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       ["home", "Casa"],
     ],
     photos: [
-      ["lx-machines", "Lavanderias"],
-      ["lx-towels", "Toalhas e banho"],
-      ["lx-spray", "Roupa de cama"],
-      ["lx-front", "Rotina da casa"],
+      ["lx-machines", "Lavanderias", "Finalização na rotina da lavanderia.", "laundry"],
+      ["lx-towels", "Toalhas e banho", "Cuidados com os tecidos de banho.", "towel"],
+      ["lx-spray", "Roupa de cama", "Lençóis e fronhas na etapa de finalização.", "sheet"],
+      ["lx-front", "Rotina da casa", "Cuidados com os tecidos do dia a dia.", "home"],
     ],
     filters: ["Todas", "Hotel", "Pousada", "Lavanderia", "Casa", "Clínica"],
     faq: [

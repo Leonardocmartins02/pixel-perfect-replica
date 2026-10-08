@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { img } from "./format";
+import { CarouselNavigation } from "./controls";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 type Props = {
   name: string;
@@ -28,17 +27,22 @@ export function ProductGallery({ name, gallery, chip }: Props) {
   const thumbs = useRef<HTMLDivElement>(null);
   const total = gallery.length;
   // quem pede menos movimento começa pausado e pode ligar no botão
-  const [playing, setPlaying] = useState(() => !reducedMotion());
+  const [playing, setPlaying] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const reduce = useReducedMotion();
+  useEffect(() => {
+    if (reduce) setPlaying(false);
+  }, [reduce]);
 
   // Passa a foto sozinho; o timer reinicia a cada troca (inclusive manual) e volta à primeira no fim.
   useEffect(() => {
-    if (!api || !playing || total < 2) return;
+    if (!api || !playing || hovered || total < 2) return;
     const timer = window.setTimeout(() => {
       if (document.hidden) return;
       api.scrollTo(api.selectedScrollSnap() + 1 >= total ? 0 : api.selectedScrollSnap() + 1);
     }, AUTOPLAY_MS);
     return () => window.clearTimeout(timer);
-  }, [api, playing, index, total]);
+  }, [api, playing, hovered, index, total]);
 
   useEffect(() => {
     if (!api) return;
@@ -79,7 +83,10 @@ export function ProductGallery({ name, gallery, chip }: Props) {
               type="button"
               aria-label={`Ver foto ${i + 1}`}
               aria-current={index === i ? "true" : "false"}
-              onClick={() => api?.scrollTo(i, reducedMotion())}
+              onClick={() => {
+                setPlaying(false);
+                api?.scrollTo(i, reducedMotion());
+              }}
             >
               <img src={img(file)} alt="" loading="lazy" />
             </Button>
@@ -89,9 +96,19 @@ export function ProductGallery({ name, gallery, chip }: Props) {
           className="main-img group"
           id="mainImg"
           setApi={setApi}
-          opts={{ align: "start", loop: false }}
+          opts={{ align: "start", loop: false, duration: reduce ? 0 : 25 }}
           aria-label={`Fotos de ${name}`}
           tabIndex={0}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onPointerDown={(event) => {
+            if (!(event.target as HTMLElement).closest("[data-carousel-playback]"))
+              setPlaying(false);
+          }}
+          onFocusCapture={(event) => {
+            if (!(event.target as HTMLElement).closest("[data-carousel-playback]"))
+              setPlaying(false);
+          }}
         >
           <CarouselContent className="ml-0 gap-3">
             {gallery.map((file, i) => (
@@ -118,32 +135,20 @@ export function ProductGallery({ name, gallery, chip }: Props) {
             </span>
             <span className="chip light">ISO 9001</span>
           </div>
-          <div className="ctrl">
-            <button
-              type="button"
-              className="pp"
-              aria-label={playing ? "Pausar fotos" : "Reproduzir fotos"}
-              aria-pressed={!playing}
-              onClick={() => setPlaying((value) => !value)}
-            >
-              {playing ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
-            </button>
-            <span className="count" id="imgCount">
-              {index + 1} / {total}
-            </span>
-          </div>
-          {/* Setas só no desktop, discretas: aparecem com hover ou foco. */}
-          <CarouselPrevious
-            aria-label="Foto anterior"
-            className="left-3 h-10 w-10 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-[980px]:hidden"
+          <CarouselNavigation
+            index={index}
+            total={total}
+            label="Fotos"
+            counterId="imgCount"
+            previous="Foto anterior"
+            next="Próxima foto"
+            playback={{
+              playing,
+              onToggle: () => setPlaying((value) => !value),
+              pause: "Pausar fotos",
+              play: "Reproduzir fotos",
+            }}
           />
-          <CarouselNext
-            aria-label="Próxima foto"
-            className="right-3 h-10 w-10 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-[980px]:hidden"
-          />
-          <div className="progress" aria-hidden="true">
-            <span style={{ transform: `scaleX(${(index + 1) / total})` }} />
-          </div>
         </Carousel>
       </div>
     </div>

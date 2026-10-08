@@ -24,11 +24,14 @@ import {
   Reviews,
 } from "./sections";
 import { Button } from "@/components/ui/button";
+import { ApplicationsCarousel } from "./ApplicationsCarousel";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { ProductGallery } from "./ProductGallery";
 import { UseRing } from "./UseRing";
 import { ProductSelector, KitSelector, ProductFaq, ReviewFilter } from "./controls";
 
 export function PerolPage() {
+  const reducedMotion = useReducedMotion();
   const [productId, setProductId] = useState<ProductId>("f5");
   const [kit, setKit] = useState<KitId>("cx6");
   const [filter, setFilter] = useState("Todas");
@@ -100,10 +103,7 @@ export function PerolPage() {
     window.addEventListener("resize", position);
     const elements = page.querySelectorAll<HTMLElement>(".rv, .ico, .stat");
     let observer: IntersectionObserver | undefined;
-    if (
-      "IntersectionObserver" in window &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    if ("IntersectionObserver" in window && !reducedMotion) {
       observer = new IntersectionObserver(
         (entries) =>
           entries.forEach((entry) => {
@@ -112,11 +112,12 @@ export function PerolPage() {
               observer?.unobserve(entry.target);
             }
           }),
-        { threshold: 0.12 },
+        { threshold: 0.08, rootMargin: "0px 0px -24px 0px" },
       );
       elements.forEach((el) => {
-        el.classList.remove("armed", "in");
-        if (el.getBoundingClientRect().top >= window.innerHeight) el.classList.add("armed");
+        el.classList.remove("armed");
+        if (el.getBoundingClientRect().top >= window.innerHeight && !el.classList.contains("in"))
+          el.classList.add("armed");
         observer!.observe(el);
       });
     } else
@@ -130,7 +131,7 @@ export function PerolPage() {
       window.removeEventListener("scroll", position);
       window.removeEventListener("resize", position);
     };
-  }, [productId, filter]);
+  }, [productId, filter, reducedMotion]);
 
   return (
     <div className="perol-page" data-prod={productId} ref={pageRef}>
@@ -731,14 +732,7 @@ export function PerolPage() {
                 </div>
               </div>
             </div>
-            <div className="photo-row" id="photoRow">
-              {product.photos.map(([name, label]) => (
-                <figure className="rv" key={name}>
-                  <img src={img(name)} alt={label} loading="lazy" />
-                  <figcaption>{label}</figcaption>
-                </figure>
-              ))}
-            </div>
+            <ApplicationsCarousel key={productId} product={product} />
           </div>
         </section>
 
@@ -870,12 +864,12 @@ export function PerolPage() {
           </div>
         </section>
 
-        <section className="sec" id="faq">
+        <section className="sec faq-section" id="faq">
           <div className="wrap faq-grid">
             <div className="sec-head rv">
               <span className="eyebrow">Dúvidas</span>
               <h2>Perguntas frequentes</h2>
-              <p>Respostas tiradas do rótulo. As pendentes dependem da operação.</p>
+              <p>Sobre o uso, os cuidados e a compra de {product.short}.</p>
               <Button asChild className="btn btn-navy" style={{ justifySelf: "start" }}>
                 <a href="#comprar">
                   Escolher meu kit{" "}
