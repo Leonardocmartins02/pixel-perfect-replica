@@ -374,6 +374,12 @@
   --acc-tint: #f1ecf9;
 }
 .perol-page {
+  --card-radius: 24px;
+  --card-radius-small: 16px;
+  --card-padding: clamp(20px, 2.4vw, 28px);
+  --card-gap: clamp(16px, 2vw, 24px);
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --card-shadow: 0 12px 32px -24px color-mix(in srgb, var(--navy) 35%, transparent);
   --background: var(--white);
   --foreground: var(--ink);
   --card: var(--white);
@@ -398,6 +404,22 @@
 .perol-page :is(button, a, [role="slider"]):focus-visible {
   outline: 3px solid var(--ring);
   outline-offset: 3px;
+}
+.perol-page :is(button, a, [role="slider"]) {
+  touch-action: manipulation;
+  scroll-margin-block: calc(var(--hdr) + 24px) 112px;
+}
+.perol-page :is(.oc, .stage, .where-col, .stat, .study article, .rev, .oc2, .guar, .main-img .slide, .use-ring-slide button, .compare) {
+  border-radius: var(--card-radius);
+}
+.perol-page :is(.rating-row, .kit, .bdg, .mech-card) {
+  border-radius: var(--card-radius-small);
+}
+.perol-page :is(.oc, .where-col, .study article, .rev) {
+  padding: var(--card-padding);
+}
+.perol-page :is(.where-grid, .study, .reviews, .offer-cards, .ba-grid) {
+  gap: var(--card-gap);
 }
 .perol-page :is(.switch, .filters) button {
   height: auto;
@@ -491,7 +513,9 @@ p {
   font-size: clamp(32px, 4.6vw, 54px);
   font-stretch: 80%;
   font-weight: 900;
-  text-transform: uppercase;
+  text-transform: none;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
   color: var(--navy);
 }
 .sec-head p {
@@ -775,22 +799,6 @@ p {
   object-fit: cover;
   user-select: none;
 }
-.main-img .progress,
-.use-ring .progress {
-  height: 3px;
-  margin-top: 12px;
-  border-radius: 999px;
-  background: var(--line);
-  overflow: hidden;
-}
-.main-img .progress span,
-.use-ring .progress span {
-  display: block;
-  height: 100%;
-  background: var(--navy);
-  transform-origin: left;
-  transition: transform 0.3s ease;
-}
 .main-img .tag {
   position: absolute;
   top: 14px;
@@ -817,63 +825,6 @@ p {
   color: var(--navy);
   border: 1px solid var(--line);
 }
-.main-img .ctrl {
-  position: absolute;
-  right: 14px;
-  /* sobe acima da barra de progresso (3px + 12px de margem) */
-  bottom: 29px;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.main-img .count,
-.main-img .pp,
-.use-ring .pp {
-  background: rgba(11, 26, 58, 0.75);
-  color: #fff;
-  border-radius: 999px;
-}
-.main-img .count {
-  font: 600 12px/1 var(--mono);
-  padding: 6px 9px;
-}
-.main-img .pp,
-.use-ring .pp {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-}
-/* alvo de toque de 44px sem aumentar o botão visível */
-.main-img .pp,
-.use-ring .pp {
-  position: relative;
-}
-.use-ring .pp {
-  background: var(--navy);
-  flex: none;
-}
-.main-img .pp::after,
-.use-ring .pp::after {
-  content: "";
-  position: absolute;
-  inset: -9px;
-}
-.main-img .pp svg,
-.use-ring .pp svg {
-  width: 12px;
-  height: 12px;
-  fill: currentColor;
-}
-
-/* mobile: a foto ocupa 88% e a próxima espia; o contador fica dentro da foto ativa, não no peek */
-@media (max-width: 640px) {
-  .main-img .ctrl {
-    right: calc(12% + 26px);
-  }
-}
-
 .info {
   display: grid;
   gap: 20px;
@@ -1228,6 +1179,10 @@ p {
 }
 .pb:first-child {
   border-left: 0;
+}
+.pb > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .pb svg {
   width: 40px;
@@ -2028,40 +1983,187 @@ p {
 .ico.armed.in svg .draw {
   stroke-dashoffset: 0;
 }
-.photo-row {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 24px;
+.applications {
+  margin-top: clamp(32px, 5vw, 64px);
+  view-timeline-name: --applications-travel;
+  view-timeline-axis: block;
 }
-.photo-row figure {
+.applications-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-bottom: 24px;
+}
+.applications-heading h3 {
+  color: var(--navy);
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.applications-heading p {
   margin: 0;
-  border-radius: 16px;
+  color: var(--perol-muted);
+}
+.applications-track {
+  margin-left: 0;
+  gap: var(--card-gap);
+  align-items: stretch;
+}
+.application-slide {
+  padding-left: 0;
+  flex-basis: calc((100% - 3 * var(--card-gap)) / 4);
+  display: flex;
+}
+.application-card {
+  width: 100%;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
   overflow: hidden;
-  aspect-ratio: 3/4;
-  position: relative;
+  background: var(--white);
+}
+.application-media {
+  aspect-ratio: 1;
+  overflow: hidden;
   background: var(--line);
 }
-.photo-row img {
+.application-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  user-select: none;
 }
-.photo-row figure:hover img {
-  transform: scale(1.06);
+.application-card figcaption {
+  padding: 20px;
+  display: grid;
+  gap: 8px;
 }
-.photo-row figcaption {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  right: 10px;
-  font: 700 13px/1.2 var(--body);
-  color: #fff;
-  background: rgba(11, 26, 58, 0.72);
-  backdrop-filter: blur(4px);
-  padding: 8px 10px;
-  border-radius: 10px;
+.application-card h4 {
+  margin: 0;
+  color: var(--navy);
+  font: 800 20px/1.2 var(--display);
+  letter-spacing: -0.02em;
+}
+.application-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--perol-muted);
+}
+/* Scroll follows the reader, without intercepting the page's native scrolling.
+   Browsers without scroll timelines keep the original, static image. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .application-media img {
+      animation: application-travel linear both;
+      animation-timeline: --applications-travel;
+      animation-range: entry 0% exit 100%;
+    }
+    .use-ring > .overflow-hidden {
+      animation: use-stage-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 35%;
+    }
+  }
+}
+@keyframes application-travel {
+  from { transform: scale(1.1) translateY(7px); }
+  to { transform: scale(1.1) translateY(-7px); }
+}
+@keyframes use-stage-reveal {
+  from { opacity: 0.65; transform: translateY(32px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Shared carousel controls stay outside the image and remain visible on touch devices. */
+.perol-page .carousel-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 3px 3px;
+}
+.perol-page .carousel-position {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  max-width: 260px;
+}
+.perol-page .carousel-label {
+  font-size: 13px;
+  color: var(--perol-muted);
+}
+.perol-page .carousel-navigation .progress {
+  flex: 1;
+  min-width: 24px;
+  height: 3px;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line);
+}
+.perol-page .carousel-navigation .progress span {
+  display: block;
+  height: 100%;
+  background: var(--navy);
+  transform-origin: left;
+  transition: transform 300ms var(--motion-ease);
+}
+.perol-page .carousel-navigation .count {
+  flex: none;
+  padding: 0;
+  background: none;
+  color: var(--navy);
+  font: 600 12px/1 var(--body);
+  font-variant-numeric: tabular-nums;
+}
+.carousel-actions {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+.perol-page .carousel-control {
+  position: static;
+  transform: none;
+  translate: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--navy);
+  box-shadow: none;
+  transition: background-color 200ms, border-color 200ms;
+}
+.perol-page .carousel-control:hover:not(:disabled) {
+  background: var(--navy-tint);
+  border-color: var(--navy);
+}
+.perol-page .carousel-control:disabled {
+  opacity: 0.35;
+}
+.perol-page .carousel-control svg {
+  width: 18px;
+  height: 18px;
+}
+.use-ring .carousel-navigation {
+  max-width: 520px;
+  margin-inline: auto;
+}
+@media (min-width: 981px) {
+  .applications-carousel .carousel-navigation { display: none; }
+}
+@media (max-width: 980px) {
+  .application-slide { flex-basis: 44%; }
+}
+@media (max-width: 560px) {
+  .application-slide { flex-basis: 86%; }
+  .perol-page .carousel-label { display: none; }
+  .application-media { aspect-ratio: 4 / 3; }
 }
 
 /* ===== anel 3D de fotos de uso ===== */
@@ -2121,22 +2223,6 @@ p {
 }
 .use-ring-caption[data-empty="true"] {
   visibility: hidden;
-}
-.use-ring-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 360px;
-  margin: 14px auto 0;
-}
-.use-ring-bar .progress {
-  flex: 1;
-  margin: 0;
-  max-width: none;
-}
-.use-ring .count {
-  font: 600 12px/1 var(--mono);
-  color: var(--navy);
 }
 .use-ring-empty {
   text-align: center;
@@ -2457,36 +2543,106 @@ p {
 }
 
 /* ===== faq ===== */
+.faq-section {
+  background: var(--snow);
+}
 .faq-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+}
+.perol-faq-list {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
 }
 .perol-faq-item {
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius-small);
+  background: var(--white);
+  overflow: clip;
+  scroll-margin-top: calc(var(--hdr) + 24px);
+}
+.perol-faq-item[data-state="open"] {
+  border-color: color-mix(in srgb, var(--navy) 35%, var(--line));
+  box-shadow: var(--card-shadow);
 }
 .perol-faq-trigger {
-  padding: 20px 0;
+  padding: 22px 24px;
   gap: 16px;
   font-family: var(--body);
   font-weight: 700;
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.5;
   color: var(--primary);
+  transition: background-color 200ms;
+}
+.perol-faq-trigger:hover {
+  text-decoration: none;
+  background: var(--snow);
+}
+.perol-page .perol-faq-trigger:focus-visible {
+  outline-offset: -4px;
+  border-radius: var(--card-radius-small);
 }
 .perol-faq-trigger > svg {
-  width: 22px;
-  height: 22px;
-  color: var(--primary);
+  display: none;
+}
+.faq-toggle {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  background: var(--navy-tint);
+  border-radius: 50%;
+}
+.faq-toggle::before,
+.faq-toggle::after {
+  content: "";
+  position: absolute;
+  background: var(--navy);
+  width: 12px;
+  height: 2px;
+  top: 13px;
+  left: 8px;
+}
+.faq-toggle::after {
+  transform: rotate(90deg);
+  transition: transform 250ms var(--motion-ease);
+}
+.perol-faq-trigger[data-state="open"] .faq-toggle::after {
+  transform: rotate(0);
 }
 .perol-faq-answer {
-  padding: 0 0 20px;
+  padding: 0 24px 24px;
   color: var(--muted-foreground);
   font-size: 16px;
   line-height: 1.6;
   display: grid;
   gap: 8px;
   justify-items: start;
+}
+.perol-faq-answer p {
+  margin: 0;
+  max-width: 60ch;
+}
+.faq-pending {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+}
+@media (min-width: 981px) {
+  .faq-grid > .sec-head {
+    position: sticky;
+    top: calc(var(--hdr) + 32px);
+    margin-bottom: 0;
+  }
+}
+@media (max-width: 560px) {
+  .perol-faq-trigger { padding: 18px; }
+  .perol-faq-answer { padding: 0 18px 20px; }
+  .faq-grid > .sec-head { margin-bottom: 0; }
 }
 
 .foot {
@@ -2571,14 +2727,15 @@ p {
 /* revelar ao rolar: repouso visível, sobe ao entrar */
 .rv {
   transition:
-    opacity 0.9s cubic-bezier(0.2, 0.7, 0.2, 1),
-    transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+    opacity 0.8s var(--motion-ease),
+    transform 0.8s var(--motion-ease);
 }
 .rv.armed {
   opacity: 0.2;
-  transform: translateY(36px);
+  transform: translateY(28px);
 }
-.rv.armed.in {
+.rv.armed.in,
+.rv.armed:focus-within {
   opacity: 1;
   transform: none;
 }
@@ -2641,9 +2798,6 @@ body.switching .swap {
   }
   .logos {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .photo-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .obj-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -2748,6 +2902,8 @@ body.switching .swap {
   .pb {
     padding: 18px 10px;
     gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
   }
   .pb svg {
     width: 30px;

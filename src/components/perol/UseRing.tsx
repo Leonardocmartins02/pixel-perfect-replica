@@ -1,21 +1,20 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { Pause, Play } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { img } from "./format";
 import { Pending } from "./sections";
+import { CarouselNavigation } from "./controls";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 type Props = {
   name: string;
   gallery: string[];
   /** [arquivo, legenda]: a legenda só aparece quando já existe texto no conteúdo. */
-  captions?: [string, string][];
+  captions?: [string, string, string?][];
 };
 
 // Packshots (frasco isolado) ficam de fora: o anel mostra só as fotos de cena de product.gallery.
@@ -45,22 +44,24 @@ export function UseRing({ name, gallery, captions = [] }: Props) {
   const [api, setApi] = useState<CarouselApi>();
   const [index, setIndex] = useState(start);
   const [dragging, setDragging] = useState(false);
-  const [flat, setFlat] = useState(false);
+  const flat = useReducedMotion();
   const total = scenes.length;
   // quem pede menos movimento começa pausado e pode ligar no botão
-  const [playing, setPlaying] = useState(() => !reducedMotion());
+  const [playing, setPlaying] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  useEffect(() => {
+    if (flat) setPlaying(false);
+  }, [flat]);
 
   // Passa a foto sozinho (volta à primeira no fim); o timer reinicia a cada troca e espera o arraste acabar.
   useEffect(() => {
-    if (!api || !playing || dragging || total < 2) return;
+    if (!api || !playing || hovered || dragging || total < 2) return;
     const timer = window.setTimeout(() => {
       if (document.hidden) return;
       api.scrollTo(api.selectedScrollSnap() + 1 >= total ? 0 : api.selectedScrollSnap() + 1);
     }, AUTOPLAY_MS);
     return () => window.clearTimeout(timer);
-  }, [api, playing, dragging, index, total]);
-
-  useEffect(() => setFlat(reducedMotion()), []);
+  }, [api, playing, hovered, dragging, index, total]);
 
   useEffect(() => {
     if (!api) return;
@@ -105,8 +106,22 @@ export function UseRing({ name, gallery, captions = [] }: Props) {
       data-3d={flat ? "false" : "true"}
       data-dragging={dragging ? "true" : "false"}
       setApi={setApi}
-      opts={{ align: "center", startIndex: start, containScroll: false, loop: false }}
+      opts={{
+        align: "center",
+        startIndex: start,
+        containScroll: false,
+        loop: false,
+        duration: flat ? 0 : 25,
+      }}
       aria-label={`Fotos de uso de ${name}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onPointerDown={(event) => {
+        if (!(event.target as HTMLElement).closest("[data-carousel-playback]")) setPlaying(false);
+      }}
+      onFocusCapture={(event) => {
+        if (!(event.target as HTMLElement).closest("[data-carousel-playback]")) setPlaying(false);
+      }}
     >
       <CarouselContent className="use-ring-track ml-0">
         {scenes.map((file, i) => {
@@ -147,38 +162,26 @@ export function UseRing({ name, gallery, captions = [] }: Props) {
           );
         })}
       </CarouselContent>
-      <CarouselPrevious
-        aria-label="Foto de uso anterior"
-        className="left-3 h-10 w-10 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-[980px]:hidden"
-      />
-      <CarouselNext
-        aria-label="Próxima foto de uso"
-        className="right-3 h-10 w-10 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-[980px]:hidden"
-      />
       <p
         className="use-ring-caption chip light"
-        aria-live="polite"
+        aria-live={playing ? "off" : "polite"}
         data-empty={caption ? "false" : "true"}
       >
         {caption ?? ""}
       </p>
-      <div className="use-ring-bar">
-        <button
-          type="button"
-          className="pp"
-          aria-label={playing ? "Pausar fotos de uso" : "Reproduzir fotos de uso"}
-          aria-pressed={!playing}
-          onClick={() => setPlaying((value) => !value)}
-        >
-          {playing ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
-        </button>
-        <div className="progress" aria-hidden="true">
-          <span style={{ transform: `scaleX(${(index + 1) / total})` }} />
-        </div>
-        <span className="count">
-          {index + 1} / {total}
-        </span>
-      </div>
+      <CarouselNavigation
+        index={index}
+        total={total}
+        label="Em uso"
+        previous="Foto de uso anterior"
+        next="Próxima foto de uso"
+        playback={{
+          playing,
+          onToggle: () => setPlaying((value) => !value),
+          pause: "Pausar fotos de uso",
+          play: "Reproduzir fotos de uso",
+        }}
+      />
     </Carousel>
   );
 }
