@@ -130,4 +130,11 @@ describe("Página importada do modelo Perol", () => {
     for (const image of container.querySelectorAll("img"))
       expect(image.getAttribute("src")).toMatch(/^\/img\/.+\.webp$/);
   });
+  it("mantém no DOM a ordem título, descrição, checks (o mobile reordena só por CSS)", () => {
+    const { container } = render(<PerolPage />);
+    const kids = [...container.querySelector("#comprar .info")!.children].map(
+      (el) => el.className || el.tagName,
+    );
+    expect(kids.slice(0, 4)).toEqual(["rating-row", "H1", "sub", "ticks"]);
+  });
 });

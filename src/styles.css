@@ -700,7 +700,8 @@ p {
 }
 .gallery {
   position: sticky;
-  top: calc(var(--hdr) + 20px);
+  /* centraliza na área abaixo do header; --gh (altura da galeria) vem do ProductGallery */
+  top: max(calc(var(--hdr) + 20px), calc((100svh + var(--hdr) - var(--gh, 0px)) / 2));
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr);
   gap: 12px;
@@ -804,22 +805,50 @@ p {
   color: var(--navy);
   border: 1px solid var(--line);
 }
-.main-img .count {
+.main-img .ctrl {
   position: absolute;
   right: 14px;
   /* sobe acima da barra de progresso (3px + 12px de margem) */
   bottom: 29px;
   z-index: 2;
-  font: 600 12px/1 var(--mono);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.main-img .count,
+.main-img .pp {
   background: rgba(11, 26, 58, 0.75);
   color: #fff;
-  padding: 6px 9px;
   border-radius: 999px;
+}
+.main-img .count {
+  font: 600 12px/1 var(--mono);
+  padding: 6px 9px;
+}
+.main-img .pp {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+}
+/* alvo de toque de 44px sem aumentar o botão visível */
+.main-img .pp {
+  position: relative;
+}
+.main-img .pp::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+.main-img .pp svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
 }
 
 /* mobile: a foto ocupa 88% e a próxima espia; o contador fica dentro da foto ativa, não no peek */
 @media (max-width: 640px) {
-  .main-img .count {
+  .main-img .ctrl {
     right: calc(12% + 26px);
   }
 }
@@ -1188,10 +1217,17 @@ p {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(24px, 5vw, 72px);
 }
+/* o palco fica centralizado na área visível abaixo do header enquanto a lista rola */
 .obj-stage-wrap {
   position: sticky;
-  top: calc(var(--hdr) + 24px);
+  top: var(--hdr);
+  height: calc(100svh - var(--hdr));
+  display: flex;
+  align-items: center;
   align-self: start;
+}
+.obj-stage-wrap > .stage {
+  width: 100%;
 }
 /* Palco: foto no topo e, embaixo, a evidência daquela dúvida (passos, itens ou ficha). */
 .stage {
@@ -2489,6 +2525,20 @@ body.switching .swap {
   }
   .compare {
     aspect-ratio: 4/3;
+  }
+  /* foto mais baixa no celular: o título (e a barra de compra fixa) cabem na primeira tela */
+  .main-img .slide {
+    aspect-ratio: 4/3;
+  }
+  /* sem cortar o frasco: o fundo dos packshots é branco, então as laterais vazias não aparecem */
+  .main-img .slide img {
+    object-fit: contain;
+  }
+  /* fluxo de compra primeiro: nota e título ficam onde estão; descrição e checks descem para o
+     fim da coluna. Só visual: o DOM não muda, então leitor de tela e Tab seguem a ordem original */
+  .info .sub,
+  .info .ticks {
+    order: 2;
   }
 }
 @media (max-width: 560px) {

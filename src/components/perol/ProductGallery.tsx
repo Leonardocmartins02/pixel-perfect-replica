@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Pause, Play } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -17,6 +18,7 @@ type Props = {
 };
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const AUTOPLAY_MS = 2500;
 
 // Galeria do topo: Embla cuida de arraste e inércia; miniaturas e contador só leem o índice dele.
 // O pai usa key={produto}, então trocar F5/Lavix remonta tudo no slide 0, sem animação.
@@ -24,7 +26,20 @@ export function ProductGallery({ name, gallery, chip }: Props) {
   const [api, setApi] = useState<CarouselApi>();
   const [index, setIndex] = useState(0);
   const thumbs = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLDivElement>(null);
   const total = gallery.length;
+  // quem pede menos movimento começa pausado e pode ligar no botão
+  const [playing, setPlaying] = useState(() => !reducedMotion());
+
+  // Passa a foto sozinho; o timer reinicia a cada troca (inclusive manual) e volta à primeira no fim.
+  useEffect(() => {
+    if (!api || !playing || total < 2) return;
+    const timer = window.setTimeout(() => {
+      if (document.hidden) return;
+      api.scrollTo(api.selectedScrollSnap() + 1 >= total ? 0 : api.selectedScrollSnap() + 1);
+    }, AUTOPLAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [api, playing, index, total]);
 
   useEffect(() => {
     if (!api) return;
@@ -37,6 +52,17 @@ export function ProductGallery({ name, gallery, chip }: Props) {
       api.off("reInit", sync);
     };
   }, [api]);
+
+  // Publica a altura da galeria em --gh para o CSS centralizar a galeria fixa na tela.
+  useEffect(() => {
+    const el = root.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() =>
+      el.style.setProperty("--gh", `${el.getBoundingClientRect().height}px`),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Mantém a miniatura ativa visível rolando só a faixa (scrollIntoView também rolaria a página).
   useEffect(() => {
@@ -53,7 +79,7 @@ export function ProductGallery({ name, gallery, chip }: Props) {
   }, [index]);
 
   return (
-    <div className="gallery">
+    <div className="gallery" ref={root}>
       <div className="thumbs" id="thumbs" ref={thumbs}>
         {gallery.map((file, i) => (
           <Button
@@ -103,9 +129,20 @@ export function ProductGallery({ name, gallery, chip }: Props) {
           </span>
           <span className="chip light">ISO 9001</span>
         </div>
-        <span className="count" id="imgCount">
-          {index + 1} / {total}
-        </span>
+        <div className="ctrl">
+          <button
+            type="button"
+            className="pp"
+            aria-label={playing ? "Pausar fotos" : "Reproduzir fotos"}
+            aria-pressed={!playing}
+            onClick={() => setPlaying((value) => !value)}
+          >
+            {playing ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+          </button>
+          <span className="count" id="imgCount">
+            {index + 1} / {total}
+          </span>
+        </div>
         {/* Setas só no desktop, discretas: aparecem com hover ou foco. */}
         <CarouselPrevious
           aria-label="Foto anterior"
