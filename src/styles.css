@@ -1349,6 +1349,28 @@ p {
   font-size: 14px;
   color: var(--perol-muted);
 }
+/* Ficha de credenciais ("Quem fabrica"): números grandes lado a lado, no lugar de duas barras empilhadas */
+.stage[data-kind="spec"] .stage-photo {
+  aspect-ratio: 16/8;
+}
+.stage[data-kind="spec"] .stage-photo.scene img {
+  object-position: center 35%;
+}
+.stage[data-kind="spec"] .stage-spec {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.stage[data-kind="spec"] .stage-spec div {
+  gap: 6px;
+  padding: 16px 16px 14px;
+  border-radius: 16px;
+  border-top: 3px solid var(--navy);
+  background: var(--acc-tint);
+}
+.stage[data-kind="spec"] .stage-spec dt {
+  font-size: 30px;
+  line-height: 1;
+}
 .obj-list {
   display: grid;
   gap: clamp(40px, 22vh, 180px);
