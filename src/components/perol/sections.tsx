@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
-  PRICES,
+  pricesForVolume,
+  type Volume,
   type KitId,
   type PerolKit,
   type ProductContent,
@@ -32,9 +33,17 @@ function Jugs({ count }: { count: number }) {
     </span>
   );
 }
-export function KitOption({ item, productId }: { item: PerolKit; productId: ProductId }) {
-  const price = PRICES[productId][item.id];
-  const base = PRICES[productId].u1;
+export function KitOption({
+  item,
+  productId,
+  volume = 1,
+}: {
+  item: PerolKit;
+  productId: ProductId;
+  volume?: Volume;
+}) {
+  const price = pricesForVolume(volume)[productId][item.id];
+  const base = pricesForVolume(volume)[productId].u1;
   const savings = price !== null && base !== null ? base * item.n - price : 0;
   return (
     <RadioGroupItem className="kit" value={item.id}>
@@ -44,7 +53,7 @@ export function KitOption({ item, productId }: { item: PerolKit; productId: Prod
       <span className="d">{item.d}</span>
       <span className="pr">{money(price)}</span>
       <span className="pl">
-        {price === null ? "R$ ––/L" : `${money(Math.round(price / item.n))}/L`}
+        {price === null ? "R$ ––/L" : `${money(Math.round(price / (item.n * volume)))}/L`}
       </span>
       {savings > 0 && <span className="save">economize {money(savings)}</span>}
     </RadioGroupItem>
@@ -53,13 +62,15 @@ export function KitOption({ item, productId }: { item: PerolKit; productId: Prod
 export function OfferCard({
   item,
   productId,
+  volume = 1,
   onBuy,
 }: {
   item: PerolKit;
   productId: ProductId;
+  volume?: Volume;
   onBuy: (id: KitId) => void;
 }) {
-  const price = PRICES[productId][item.id];
+  const price = pricesForVolume(volume)[productId][item.id];
   return (
     <article className={`oc2 rv ${item.id === "cx6" ? "hl" : ""}`}>
       {item.flag && <span className="flag">{item.flag}</span>}
@@ -70,7 +81,7 @@ export function OfferCard({
       <span className="pl">
         {price === null
           ? "R$ ––/L · preço a definir"
-          : `${money(Math.round(price / item.n))} por litro`}
+          : `${money(Math.round(price / (item.n * volume)))} por litro`}
       </span>
       <ul>
         {item.perks.map((text) => (
@@ -267,19 +278,44 @@ export function Stats({ product }: { product: ProductContent }) {
     </>
   );
 }
-export function Comparison({ item }: { item: { t: string; s: string } }) {
+export function Comparison({ item }: { item: ProductContent["ba"][number] }) {
   const [value, setValue] = useState(50);
   return (
     <div className="ba rv">
-      <div className="compare" style={{ "--x": `${value}%` } as CSSProperties}>
-        <div className="side before">
-          <Sym name="cam" />
-          Foto real · antes
-        </div>
-        <div className="side after">
-          <Sym name="cam" />
-          Foto real · depois
-        </div>
+      <div
+        className="compare"
+        data-photos={item.before && item.after ? "" : undefined}
+        style={{ "--x": `${value}%` } as CSSProperties}
+      >
+        {item.before && item.after ? (
+          <>
+            <img
+              className="side before"
+              src={img(item.before)}
+              alt={`${item.t}: antes`}
+              loading="lazy"
+              draggable={false}
+            />
+            <img
+              className="side after"
+              src={img(item.after)}
+              alt={`${item.t}: depois`}
+              loading="lazy"
+              draggable={false}
+            />
+          </>
+        ) : (
+          <>
+            <div className="side before">
+              <Sym name="cam" />
+              Foto real · antes
+            </div>
+            <div className="side after">
+              <Sym name="cam" />
+              Foto real · depois
+            </div>
+          </>
+        )}
         <span className="lbl l">ANTES</span>
         <span className="lbl r">DEPOIS</span>
         <div className="handle" />

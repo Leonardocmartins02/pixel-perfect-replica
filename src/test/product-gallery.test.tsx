@@ -30,9 +30,9 @@ describe("Galeria do topo (Embla)", () => {
 
   it("clicar na miniatura muda o contador e o aria-current", () => {
     render(<PerolPage />);
-    fireEvent.click(screen.getByRole("button", { name: "Ver foto 4" }));
-    expect(counter()).toBe(`4 / ${PRODUCTS.f5.gallery.length}`);
-    expect(screen.getByRole("button", { name: "Ver foto 4" })).toHaveAttribute(
+    fireEvent.click(screen.getByRole("button", { name: "Ver foto 3" }));
+    expect(counter()).toBe(`3 / ${PRODUCTS.f5.gallery.length}`);
+    expect(screen.getByRole("button", { name: "Ver foto 3" })).toHaveAttribute(
       "aria-current",
       "true",
     );
@@ -78,10 +78,9 @@ describe("Galeria do topo (Embla)", () => {
   it("só a foto atual e a seguinte carregam já", () => {
     render(<PerolPage />);
     const imgs = within(mainImg()).getAllByRole("img");
-    expect(imgs.map((el) => el.getAttribute("loading")).slice(0, 4)).toEqual([
+    expect(imgs.map((el) => el.getAttribute("loading")).slice(0, 3)).toEqual([
       "eager",
       "eager",
-      "lazy",
       "lazy",
     ]);
   });

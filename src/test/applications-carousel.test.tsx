@@ -20,14 +20,14 @@ describe("Aplicações e FAQ", () => {
       expect(within(carousel).getAllByRole("heading", { level: 4 })).toHaveLength(
         PRODUCTS.f5.photos.length,
       );
-      expect(screen.getByRole("button", { name: "Ambiente anterior" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Ambiente anterior" })).toBeEnabled();
       fireEvent.click(screen.getByRole("button", { name: "Próximo ambiente" }));
       expect(carousel.querySelector(".count")).toHaveTextContent("2 / 4");
-      fireEvent.keyDown(carousel, { key: "ArrowRight" });
-      fireEvent.keyDown(carousel, { key: "ArrowRight" });
+      fireEvent.keyDown(carousel, { key: "ArrowDown" });
+      fireEvent.keyDown(carousel, { key: "ArrowDown" });
       expect(carousel.querySelector(".count")).toHaveTextContent("4 / 4");
-      expect(screen.getByRole("button", { name: "Próximo ambiente" })).toBeDisabled();
-      fireEvent.keyDown(carousel, { key: "ArrowLeft" });
+      expect(screen.getByRole("button", { name: "Próximo ambiente" })).toBeEnabled();
+      fireEvent.keyDown(carousel, { key: "ArrowUp" });
       expect(carousel.querySelector(".count")).toHaveTextContent("3 / 4");
     } finally {
       vi.useRealTimers();

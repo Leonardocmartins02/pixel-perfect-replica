@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { PerolPage } from "@/components/perol/PerolPage";
-import { CHECKOUT, PRICES } from "@/content/flotador";
+import { CHECKOUT, PRICES, PRICES_5L } from "@/content/flotador";
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
@@ -35,6 +35,36 @@ describe("Página importada do modelo Perol", () => {
       "true",
     );
     expect(window.location.hash).toBe("#lavix");
+  });
+
+  it("altera o volume dos kits e preserva a escolha ao trocar de produto", () => {
+    render(<PerolPage />);
+    fireEvent.click(screen.getByRole("radio", { name: "5 L" }));
+    expect(document.querySelector("#kitName")).toHaveTextContent("6 galões de 5 L");
+    expect(screen.getByText("30 litros")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
+    expect(document.querySelector("#kitName")).toHaveTextContent("Lavix · 6 galões de 5 L");
+    fireEvent.click(screen.getByRole("radio", { name: "1 L" }));
+    expect(document.querySelector("#kitName")).toHaveTextContent("6 frascos de 1 L");
+    expect(screen.getByText("6 litros")).toBeInTheDocument();
+  });
+
+  it("usa preços independentes por volume e calcula o preço por litro do galão", () => {
+    const oldPrice = PRICES.f5.u1;
+    const oldGallonPrice = PRICES_5L.f5.u1;
+    PRICES.f5.u1 = 2000;
+    PRICES_5L.f5.u1 = 7500;
+    try {
+      render(<PerolPage />);
+      fireEvent.click(screen.getByRole("radio", { name: /1 un\./ }));
+      expect(document.querySelector("#totalPrice")).toHaveTextContent(/20,00/);
+      fireEvent.click(screen.getByRole("radio", { name: "5 L" }));
+      expect(document.querySelector("#totalPrice")).toHaveTextContent(/75,00/);
+      expect(screen.getByRole("radio", { name: /1 un\./ })).toHaveTextContent(/15,00\/L/);
+    } finally {
+      PRICES.f5.u1 = oldPrice;
+      PRICES_5L.f5.u1 = oldGallonPrice;
+    }
   });
 
   it("mantém Lavix ao navegar para uma seção", () => {
@@ -72,7 +102,8 @@ describe("Página importada do modelo Perol", () => {
 
   it("atualiza o comparador por controle acessível", () => {
     render(<PerolPage />);
-    const slider = screen.getByRole("slider", { name: /Piso de cozinha industrial/ });
+    fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
+    const slider = screen.getByRole("slider", { name: /Toalha de hotel/ });
     fireEvent.keyDown(slider, { key: "ArrowRight" });
     expect(slider).toHaveAttribute("aria-valuenow", "51");
     expect(slider).toHaveAttribute("aria-valuetext", "51% antes e 49% depois");
@@ -81,6 +112,23 @@ describe("Página importada do modelo Perol", () => {
     expect(slider).toHaveAttribute("aria-valuenow", "100");
     fireEvent.keyDown(slider, { key: "Home" });
     expect(slider).toHaveAttribute("aria-valuenow", "0");
+  });
+
+  it("monta o comparador do F5 com o par de fotos antes e depois", () => {
+    render(<PerolPage />);
+    const slider = screen.getByRole("slider", { name: /Pisos · galão/ });
+    const compare = slider.closest(".compare")!;
+    expect(compare).toHaveAttribute("data-photos");
+    expect(within(compare as HTMLElement).getByAltText("Pisos · galão: antes")).toHaveAttribute(
+      "src",
+      "/img/f5-comparacao-piso-antes.webp",
+    );
+    expect(within(compare as HTMLElement).getByAltText("Pisos · galão: depois")).toHaveAttribute(
+      "src",
+      "/img/f5-comparacao-piso-depois.webp",
+    );
+    fireEvent.keyDown(slider, { key: "ArrowLeft" });
+    expect(compare.getAttribute("style")).toContain("--x: 49%");
   });
 
   it("seleciona kits pelas setas do teclado", async () => {
@@ -125,7 +173,7 @@ describe("Página importada do modelo Perol", () => {
 
   it("entrega todo o conteúdo e imagens locais desde a renderização", () => {
     const { container } = render(<PerolPage />);
-    expect(container.querySelectorAll("main section")).toHaveLength(12);
+    expect(container.querySelectorAll("main section")).toHaveLength(11);
     expect(within(container.querySelector("#kits")!).getAllByRole("radio")).toHaveLength(3);
     for (const image of container.querySelectorAll("img"))
       expect(image.getAttribute("src")).toMatch(/^\/img\/.+\.webp$/);

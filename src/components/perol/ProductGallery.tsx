@@ -110,6 +110,13 @@ export function ProductGallery({ name, gallery, chip }: Props) {
               setPlaying(false);
           }}
         >
+          {/* Identificação fora da arte para preservar rótulos e comparações. */}
+          <div className="tag">
+            <span className="chip" data-k="chip1">
+              {chip}
+            </span>
+            <span className="chip light">ISO 9001</span>
+          </div>
           <CarouselContent className="ml-0 gap-3">
             {gallery.map((file, i) => (
               <CarouselItem
@@ -128,13 +135,6 @@ export function ProductGallery({ name, gallery, chip }: Props) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          {/* Chips e contador ficam fora do trilho: não rolam junto com as fotos. */}
-          <div className="tag">
-            <span className="chip" data-k="chip1">
-              {chip}
-            </span>
-            <span className="chip light">ISO 9001</span>
-          </div>
           <CarouselNavigation
             index={index}
             total={total}

@@ -6,7 +6,13 @@ import {
 } from "@/components/ui/accordion";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { KITS, type KitId, type ProductContent, type ProductId } from "@/content/flotador";
+import {
+  kitsForVolume,
+  type Volume,
+  type KitId,
+  type ProductContent,
+  type ProductId,
+} from "@/content/flotador";
 import { KitOption, Pending } from "./sections";
 import { Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -97,13 +103,38 @@ export function ProductSelector({
   );
 }
 
+export function VolumeSelector({
+  value,
+  onChange,
+}: {
+  value: Volume;
+  onChange: (value: Volume) => void;
+}) {
+  return (
+    <ToggleGroup
+      className="switch"
+      type="single"
+      value={String(value)}
+      aria-label="Volume da embalagem"
+      onValueChange={(next) => {
+        if (next === "1" || next === "5") onChange(Number(next) as Volume);
+      }}
+    >
+      <ToggleGroupItem value="1">1 L</ToggleGroupItem>
+      <ToggleGroupItem value="5">5 L</ToggleGroupItem>
+    </ToggleGroup>
+  );
+}
+
 export function KitSelector({
   value,
   productId,
+  volume = 1,
   onChange,
 }: {
   value: KitId;
   productId: ProductId;
+  volume?: Volume;
   onChange: (value: KitId) => void;
 }) {
   return (
@@ -116,8 +147,8 @@ export function KitSelector({
         if (next === "u1" || next === "u2" || next === "cx6") onChange(next);
       }}
     >
-      {KITS.map((item) => (
-        <KitOption key={item.id} item={item} productId={productId} />
+      {kitsForVolume(volume).map((item) => (
+        <KitOption key={item.id} item={item} productId={productId} volume={volume} />
       ))}
     </RadioGroup>
   );
