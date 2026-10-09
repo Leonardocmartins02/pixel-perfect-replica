@@ -15,8 +15,13 @@ const AUTOPLAY_MS = 2500;
 export function ApplicationsCarousel({ product }: { product: ProductContent }) {
   const [api, setApi] = useState<CarouselApi>();
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [playing, setPlaying] = useState(true);
   const reduced = useReducedMotion();
+  useEffect(() => {
+    if (reduced) setPlaying(false);
+  }, [reduced]);
   useEffect(() => {
     if (!api) return;
     const sync = () => setIndex(api.selectedScrollSnap());
@@ -28,16 +33,16 @@ export function ApplicationsCarousel({ product }: { product: ProductContent }) {
   }, [api]);
 
   // Passa sozinho a cada 2,5 s e volta ao início no fim; o timer reinicia a cada troca (botão, arraste ou teclado).
-  // Pausa com o mouse ou o foco no carrossel e para de vez com movimento reduzido.
+  // Pausa com o mouse ou o foco; movimento reduzido começa com reprodução desligada.
   useEffect(() => {
-    if (!api || reduced || paused || product.photos.length < 2) return;
-    const timer = window.setTimeout(() => {
+    if (!api || !playing || hovered || focused || product.photos.length < 2) return;
+    const timer = window.setInterval(() => {
       if (document.hidden) return;
       if (api.canScrollNext()) api.scrollNext();
       else api.scrollTo(0);
     }, AUTOPLAY_MS);
-    return () => window.clearTimeout(timer);
-  }, [api, reduced, paused, index, product.photos.length]);
+    return () => window.clearInterval(timer);
+  }, [api, playing, hovered, focused, index, product.photos.length]);
 
   if (!product.photos.length) return null;
 
@@ -48,19 +53,24 @@ export function ApplicationsCarousel({ product }: { product: ProductContent }) {
         <p>Explore as aplicações de {product.short}.</p>
       </div>
       <Carousel
+        orientation="vertical"
         id="photoRow"
         className="applications-carousel"
         aria-label={`Ambientes de uso de ${product.name}`}
         tabIndex={0}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocusCapture={() => setPaused(true)}
-        onBlurCapture={() => setPaused(false)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocusCapture={(event) => {
+          if (!(event.target as HTMLElement).closest("[data-carousel-playback]")) setFocused(true);
+        }}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false);
+        }}
         setApi={setApi}
         opts={{
           align: "start",
           containScroll: "trimSnaps",
-          loop: false,
+          loop: true,
           duration: reduced ? 0 : 25,
         }}
       >
@@ -96,6 +106,15 @@ export function ApplicationsCarousel({ product }: { product: ProductContent }) {
           previous="Ambiente anterior"
           next="Próximo ambiente"
           label="Ambientes"
+          playback={{
+            playing,
+            onToggle: () => {
+              setPlaying((value) => !value);
+              setFocused(false);
+            },
+            pause: "Pausar ambientes",
+            play: "Reproduzir ambientes",
+          }}
         />
       </Carousel>
     </div>

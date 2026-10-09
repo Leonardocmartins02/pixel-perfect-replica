@@ -25,6 +25,16 @@ export function mockEmblaLayout() {
   ) {
     return isSlide(this) ? slideLeft(this) : 0;
   });
+  vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    return isSlide(this) ? 264 : 300;
+  });
+  vi.spyOn(HTMLElement.prototype, "offsetTop", "get").mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    return isSlide(this) ? slideLeft(this) : 0;
+  });
   vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
     const left = isSlide(this) ? slideLeft(this) : 0;
     const width = isSlide(this) ? 264 : 300;

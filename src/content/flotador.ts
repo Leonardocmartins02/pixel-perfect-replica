@@ -120,6 +120,7 @@ export const flotador: FlotadorConfig = {
 // Conteúdo recebido em perol-lp-github.zip. Condições comerciais seguem pendentes.
 // PRICES usa centavos inteiros, como o restante do projeto.
 export type ProductId = "f5" | "lx";
+export type Volume = 1 | 5;
 export type KitId = "u1" | "u2" | "cx6";
 export interface PerolKit {
   id: KitId;
@@ -170,9 +171,8 @@ export interface ProductContent {
   mechLabels: [string, string, string, string];
   stats: { v: string; k: string; src: string; real?: boolean }[];
   study: { h: string; p: string; pin: string }[];
-  ba: { t: string; s: string }[];
-  /** Título da faixa do anel de fotos de uso; ausente = título genérico. */
-  useTitle?: string;
+  /** before/after = par de fotos da mesma cena; ausente = quadro "Foto real" pendente. */
+  ba: { t: string; s: string; before?: string; after?: string }[];
   /** Nota real, total de avaliações e onde elas estão; ausente = campo "Pendente" (nunca inventar). */
   rating?: { score: number; count: number; source: string };
   whereTitle: string;
@@ -221,6 +221,26 @@ export const KITS: PerolKit[] = [
     perks: ["6 litros", "Menor preço por litro", "Ideal para empresas"],
   },
 ];
+// Cada volume tem preço e destino próprios; os valores de 1 L existentes são preservados.
+export const PRICES_5L: typeof PRICES = {
+  f5: { u1: null, u2: null, cx6: null },
+  lx: { u1: null, u2: null, cx6: null },
+};
+export const CHECKOUT_5L: typeof CHECKOUT = {
+  f5: { u1: null, u2: null, cx6: null },
+  lx: { u1: null, u2: null, cx6: null },
+};
+export const pricesForVolume = (volume: Volume) => (volume === 1 ? PRICES : PRICES_5L);
+export const checkoutForVolume = (volume: Volume) => (volume === 1 ? CHECKOUT : CHECKOUT_5L);
+export const kitsForVolume = (volume: Volume): PerolKit[] =>
+  volume === 1
+    ? KITS
+    : KITS.map((item) => ({
+        ...item,
+        d: `${item.n} ${item.n === 1 ? "galão" : "galões"} de 5 L`,
+        perks: [`${item.n * volume} litros`, ...item.perks.slice(1)],
+      }));
+
 export const DIVS = [
   "Institucional",
   "Tratamento de piso",
@@ -250,7 +270,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       "Um frasco para pisos, inox, vidros, azulejos e louças",
       "Aplique com pano, mop, pulverizador ou máquina",
     ],
-    gallery: ["f5-pack", "f5-close", "f5-pour", "f5-mop", "f5-steel", "f5-lobby", "f5-counter"],
+    gallery: ["f5-close", "f5-galao-rotulo", "f5-galao-detalhe"],
     promo: [
       "Envio para todo o Brasil",
       "Compra direta, sem cadastro",
@@ -303,15 +323,16 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       {
         q: "Produto profissional não é caro?",
         h: "Rende mais que o de mercado",
-        p: "Na caixa com 6 litros, o custo por litro cai. Com a diluição correta, cada litro vira vários litros de solução de limpeza.",
+        p: "Na caixa com 6 unidades, o custo por litro cai. Com a diluição correta, cada litro vira vários litros de solução de limpeza.",
         proof: ["Diluível"],
         pend: "custo por litro diluído",
         stage: {
-          img: "f5-pack",
+          img: "f5-counter",
+          scene: true,
           kind: "spec",
           title: "Na caixa",
           items: [
-            { b: "Caixa com 6 litros", s: "O custo por litro cai" },
+            { b: "Caixa com 6 unidades", s: "O custo por litro cai" },
             { b: "Diluível", s: "Cada litro vira vários litros de solução" },
           ],
         },
@@ -339,7 +360,8 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         proof: ["Checkout seguro"],
         pend: "prazo e garantia",
         stage: {
-          img: "f5-pack",
+          img: "f5-lobby",
+          scene: true,
           kind: "steps",
           title: "Do clique à entrega",
           items: [{ b: "Pagamento direto no checkout seguro" }, { b: "Você acompanha o envio" }],
@@ -388,11 +410,19 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       },
     ],
     ba: [
-      { t: "Piso de cozinha industrial", s: "Gordura acumulada no rejunte" },
-      { t: "Bancada de inox", s: "Marcas e respingos" },
-      { t: "Porcelanato de recepção", s: "Sujeira de alto tráfego" },
+      {
+        t: "Azulejos · galão",
+        s: "Comparação ilustrativa",
+        before: "f5-comparacao-azulejo-antes",
+        after: "f5-comparacao-azulejo-depois",
+      },
+      {
+        t: "Pisos · galão",
+        s: "Comparação ilustrativa",
+        before: "f5-comparacao-piso-antes",
+        after: "f5-comparacao-piso-depois",
+      },
     ],
-    useTitle: "Do piso ao inox",
     whereTitle: "Do piso ao inox com o mesmo frasco",
     whereLead: "Superfícies e ambientes indicados no rótulo do F5 Flotador Universal.",
     colA: "Superfícies",
@@ -449,15 +479,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       "Para algodão e tecidos mistos de cama, mesa e banho",
       "Na lavadora ou borrifado no tecido seco",
     ],
-    gallery: [
-      "lx-pack",
-      "lx-close",
-      "lx-pour-laundry",
-      "lx-machines",
-      "lx-spray",
-      "lx-towels",
-      "lx-front",
-    ],
+    gallery: ["lx-pack", "lx-close", "lx-galao-lateral"],
     promo: [
       "Envio para todo o Brasil",
       "Compra direta, sem cadastro",
@@ -511,7 +533,8 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         proof: ["Concentrado"],
         pend: "dose por kg de roupa",
         stage: {
-          img: "lx-pack",
+          img: "lx-front",
+          scene: true,
           kind: "spec",
           title: "Concentrado",
           items: [
@@ -543,7 +566,8 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         proof: ["Checkout seguro"],
         pend: "prazo e garantia",
         stage: {
-          img: "lx-pack",
+          img: "lx-spray",
+          scene: true,
           kind: "steps",
           title: "Do clique à entrega",
           items: [{ b: "Pagamento direto no checkout seguro" }, { b: "Você acompanha o envio" }],

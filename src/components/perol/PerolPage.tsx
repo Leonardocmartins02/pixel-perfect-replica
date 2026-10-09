@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  CHECKOUT,
+  checkoutForVolume,
   DIVS,
-  KITS,
-  PRICES,
+  kitsForVolume,
+  type Volume,
+  pricesForVolume,
   PRODUCTS,
   flotador,
   type KitId,
@@ -27,19 +28,22 @@ import { Button } from "@/components/ui/button";
 import { ApplicationsCarousel } from "./ApplicationsCarousel";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { ProductGallery } from "./ProductGallery";
-import { UseRing } from "./UseRing";
-import { ProductSelector, KitSelector, ProductFaq, ReviewFilter } from "./controls";
+import { ProductSelector, VolumeSelector, KitSelector, ProductFaq, ReviewFilter } from "./controls";
 
 export function PerolPage() {
   const reducedMotion = useReducedMotion();
   const [productId, setProductId] = useState<ProductId>("f5");
+  const [volume, setVolume] = useState<Volume>(1);
+  const kits = kitsForVolume(volume);
+  const prices = pricesForVolume(volume);
+  const checkout = checkoutForVolume(volume);
   const [kit, setKit] = useState<KitId>("cx6");
   const [filter, setFilter] = useState("Todas");
   const [toast, setToast] = useState("");
   const [sticky, setSticky] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const product = PRODUCTS[productId];
-  const selectedKit = KITS.find((item) => item.id === kit)!;
+  const selectedKit = kits.find((item) => item.id === kit)!;
   const selectProduct = (id: ProductId) => {
     setProductId(id);
     setFilter("Todas");
@@ -56,12 +60,12 @@ export function PerolPage() {
       ...flotador,
       offer: {
         ...flotador.offer,
-        boxPriceCents: PRICES[productId][id],
-        purchaseUrl: CHECKOUT[productId][id],
+        boxPriceCents: prices[productId][id],
+        purchaseUrl: checkout[productId][id],
       },
     });
-    if (offer.enabled && CHECKOUT[productId][id]) {
-      window.location.assign(CHECKOUT[productId][id]!);
+    if (offer.enabled && checkout[productId][id]) {
+      window.location.assign(checkout[productId][id]!);
       return;
     }
     setToast("Compra ainda indisponível. Preços e condições deste kit estão pendentes.");
@@ -530,14 +534,15 @@ export function PerolPage() {
                 <b>Escolha seu kit</b>
                 <span className="pend">preços</span>
               </div>
-              <KitSelector value={kit} productId={productId} onChange={setKit} />
+              <VolumeSelector value={volume} onChange={setVolume} />
+              <KitSelector volume={volume} value={kit} productId={productId} onChange={setKit} />
 
               <div className="buyline">
                 <div className="total">
                   <span id="kitName">
                     {product.short} · {selectedKit.d}
                   </span>
-                  <b id="totalPrice">{money(PRICES[productId][kit])}</b>
+                  <b id="totalPrice">{money(prices[productId][kit])}</b>
                 </div>
                 <Button className="btn btn-buy" type="button" data-buy="" onClick={() => buy(kit)}>
                   Comprar agora{" "}
@@ -632,179 +637,6 @@ export function PerolPage() {
           </div>
         </section>
 
-        <section className="sec use" id="em-uso" style={{ paddingTop: "0" }}>
-          <div className="wrap">
-            <div className="sec-head center rv">
-              <span className="eyebrow">Em uso</span>
-              <h2>{product.useTitle ?? "Fotos de uso"}</h2>
-            </div>
-            <UseRing
-              key={productId}
-              name={product.name}
-              gallery={product.gallery}
-              captions={product.photos}
-            />
-          </div>
-        </section>
-
-        <section className="sec" id="como-funciona" style={{ paddingTop: "0" }}>
-          <div className="wrap mech-grid">
-            <div className="mech-svg rv" id="mechSvg">
-              <Mechanism product={product} productId={productId} />
-            </div>
-            <div>
-              <div className="sec-head rv" style={{ marginBottom: "24px" }}>
-                <span className="eyebrow">Como funciona</span>
-                <h2 data-k="mechTitle">{product.mechTitle}</h2>
-                <p data-k="mechLead">{product.mechLead}</p>
-              </div>
-              <MechSteps steps={product.mech} />
-            </div>
-          </div>
-        </section>
-
-        <section className="sec data on-navy" id="dados">
-          <div className="wrap">
-            <div className="sec-head rv">
-              <span className="eyebrow">Dados de eficácia</span>
-              <h2>Números do laudo, não promessa</h2>
-              <p>
-                Cada número entra a partir do laudo técnico ou da ficha do produto Perol. Enquanto o
-                documento não chega, o campo fica marcado como Pendente.
-              </p>
-            </div>
-            <div className="stats" id="stats">
-              <Stats product={product} />
-            </div>
-            <div className="study" id="study">
-              {product.study.map((study) => (
-                <article className="rv" key={study.h}>
-                  <span className="eyebrow">Estudo</span>
-                  <h3>{study.h}</h3>
-                  <p>{study.p}</p>
-                  <span className="pin">
-                    <Sym name="flask" />
-                    {study.pin}
-                  </span>
-                  <Pending>documento técnico</Pending>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="sec" id="antes-depois">
-          <div className="wrap">
-            <div className="sec-head rv">
-              <span className="eyebrow">Antes e depois</span>
-              <h2>Arraste e veja a diferença</h2>
-              <p>
-                Fotos reais, mesmo lugar, mesma luz e mesmo ângulo. Cada bloco já está pronto para
-                receber o par de fotos.
-              </p>
-            </div>
-            <div className="ba-grid" id="baGrid">
-              {product.ba.map((item) => (
-                <Comparison key={item.t} item={item} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="sec where" id="onde-usar">
-          <div className="wrap">
-            <div className="sec-head rv">
-              <span className="eyebrow">Onde usar</span>
-              <h2 data-k="whereTitle">{product.whereTitle}</h2>
-              <p data-k="whereLead">{product.whereLead}</p>
-            </div>
-            <div className="where-grid">
-              <div className="where-col rv">
-                <h3 data-k="colA">{product.colA}</h3>
-                <div className="icons" id="iconsA">
-                  <SurfaceIcons items={product.iconsA} />
-                </div>
-              </div>
-              <div className="where-col rv">
-                <h3>Locais</h3>
-                <div className="icons" id="iconsB">
-                  <SurfaceIcons items={product.iconsB} />
-                </div>
-              </div>
-            </div>
-            <ApplicationsCarousel key={productId} product={product} />
-          </div>
-        </section>
-
-        <section className="sec" id="quem-usa">
-          <div className="wrap">
-            <div className="sec-head center rv">
-              <span className="eyebrow">Quem usa Perol</span>
-              <h2>Empresas que confiam na marca</h2>
-              <p>
-                Só entram logos de clientes reais, com autorização para uso. Hotéis, hospitais,
-                condomínios e restaurantes que já compram Perol.
-              </p>
-            </div>
-            <div className="logos rv" id="logos">
-              {["Hotel", "Hospital", "Condomínio", "Restaurante", "Escola", "Indústria"].map(
-                (label) => (
-                  <div key={label}>
-                    Logo real
-                    <br />
-                    {label}
-                  </div>
-                ),
-              )}
-            </div>
-            <div className="divs rv">
-              <p>A Perol atende 13 divisões do mercado profissional</p>
-              <ul id="divs">
-                {DIVS.map((text) => (
-                  <li key={text}>{text}</li>
-                ))}
-              </ul>
-              <small>Fonte: perol.com.br</small>
-            </div>
-          </div>
-        </section>
-
-        <section className="sec" id="avaliacoes" style={{ paddingTop: "0" }}>
-          <div className="wrap">
-            <div className="sec-head rv">
-              <span className="eyebrow">Avaliações</span>
-              <h2>O que dizem os clientes</h2>
-            </div>
-            <div className="rev-head rv">
-              <span className="big">–,–</span>
-              <div style={{ display: "grid", gap: "6px", justifyItems: "start" }}>
-                <span className="stars empty">
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                </span>
-                <span className="pend">média e total de avaliações reais</span>
-              </div>
-            </div>
-            <ReviewFilter items={product.filters} value={filter} onChange={setFilter} />
-            <div className="reviews" id="reviews">
-              <Reviews product={product} filter={filter} />
-            </div>
-          </div>
-        </section>
-
         <section className="sec offer on-navy" id="kits-final">
           <div className="wrap">
             <div className="sec-head center rv">
@@ -813,8 +645,14 @@ export function PerolPage() {
               <p>Toque no kit e vá direto para o pagamento.</p>
             </div>
             <div className="offer-cards" id="offerCards">
-              {KITS.map((item) => (
-                <OfferCard key={item.id} item={item} productId={productId} onBuy={buy} />
+              {kits.map((item) => (
+                <OfferCard
+                  volume={volume}
+                  key={item.id}
+                  item={item}
+                  productId={productId}
+                  onBuy={buy}
+                />
               ))}
             </div>
             <div className="guar rv">
@@ -864,6 +702,192 @@ export function PerolPage() {
           </div>
         </section>
 
+        <section
+          className="sec professional-section"
+          id="quem-usa"
+          aria-labelledby="professional-title"
+        >
+          <div className="wrap">
+            <div className="professional-panel rv">
+              <div className="professional-intro">
+                <span className="eyebrow">Perol no mercado profissional</span>
+                <h2 id="professional-title">
+                  Diferentes setores.
+                  <br />O mesmo cuidado.
+                </h2>
+                <p>
+                  Conheça as divisões atendidas pela Perol e explore as aplicações de cada produto.
+                </p>
+                <Button asChild className="professional-link" variant="outline">
+                  <a href="#onde-usar">
+                    Explorar aplicações <Sym name="arrow" />
+                  </a>
+                </Button>
+                <div className="professional-count">
+                  <strong>{DIVS.length.toString().padStart(2, "0")}</strong>
+                  <span>
+                    divisões do
+                    <br />
+                    mercado profissional
+                  </span>
+                </div>
+              </div>
+              <div className="professional-divisions">
+                <div className="professional-label">
+                  <span>Áreas de atuação</span>
+                  <span>01 — 13</span>
+                </div>
+                <h3>
+                  Uma linha que acompanha
+                  <br />
+                  diferentes rotinas.
+                </h3>
+                <ul id="divs" className="division-list" aria-label="Divisões atendidas pela Perol">
+                  {DIVS.map((text, index) => (
+                    <li key={text}>
+                      <span className="division-number" aria-hidden="true">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <small className="professional-source">Fonte: perol.com.br</small>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="sec where" id="onde-usar">
+          <div className="wrap">
+            <div className="sec-head rv">
+              <span className="eyebrow">Onde usar</span>
+              <h2 data-k="whereTitle">{product.whereTitle}</h2>
+              <p data-k="whereLead">{product.whereLead}</p>
+            </div>
+            <div className="where-grid">
+              <div className="where-col rv">
+                <h3 data-k="colA">{product.colA}</h3>
+                <div className="icons" id="iconsA">
+                  <SurfaceIcons items={product.iconsA} />
+                </div>
+              </div>
+              <div className="where-col rv">
+                <h3>Locais</h3>
+                <div className="icons" id="iconsB">
+                  <SurfaceIcons items={product.iconsB} />
+                </div>
+              </div>
+            </div>
+            <ApplicationsCarousel key={productId} product={product} />
+          </div>
+        </section>
+
+        <section className="sec" id="antes-depois">
+          <div className="wrap">
+            <div className="sec-head rv">
+              <span className="eyebrow">Antes e depois</span>
+              <h2>
+                {product.ba.some((item) => item.before)
+                  ? "Antes e depois nas superfícies"
+                  : "Arraste e veja a diferença"}
+              </h2>
+              <p>
+                {product.ba.some((item) => item.before)
+                  ? "Comparações ilustrativas do F5 em azulejos e pisos."
+                  : "Fotos reais, mesmo lugar, mesma luz e mesmo ângulo. Cada bloco já está pronto para receber o par de fotos."}
+              </p>
+            </div>
+            <div className="ba-grid" id="baGrid">
+              {product.ba.map((item) => (
+                <Comparison key={item.t} item={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="sec" id="como-funciona" style={{ paddingTop: "0" }}>
+          <div className="wrap mech-grid">
+            <div className="mech-svg rv" id="mechSvg">
+              <Mechanism product={product} productId={productId} />
+            </div>
+            <div>
+              <div className="sec-head rv" style={{ marginBottom: "24px" }}>
+                <span className="eyebrow">Como funciona</span>
+                <h2 data-k="mechTitle">{product.mechTitle}</h2>
+                <p data-k="mechLead">{product.mechLead}</p>
+              </div>
+              <MechSteps steps={product.mech} />
+            </div>
+          </div>
+        </section>
+
+        <section className="sec data on-navy" id="dados">
+          <div className="wrap">
+            <div className="sec-head rv">
+              <span className="eyebrow">Dados de eficácia</span>
+              <h2>Números do laudo, não promessa</h2>
+              <p>
+                Cada número entra a partir do laudo técnico ou da ficha do produto Perol. Enquanto o
+                documento não chega, o campo fica marcado como Pendente.
+              </p>
+            </div>
+            <div className="stats" id="stats">
+              <Stats product={product} />
+            </div>
+            <div className="study" id="study">
+              {product.study.map((study) => (
+                <article className="rv" key={study.h}>
+                  <span className="eyebrow">Estudo</span>
+                  <h3>{study.h}</h3>
+                  <p>{study.p}</p>
+                  <span className="pin">
+                    <Sym name="flask" />
+                    {study.pin}
+                  </span>
+                  <Pending>documento técnico</Pending>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="sec" id="avaliacoes">
+          <div className="wrap">
+            <div className="sec-head rv">
+              <span className="eyebrow">Avaliações</span>
+              <h2>O que dizem os clientes</h2>
+            </div>
+            <div className="rev-head rv">
+              <span className="big">–,–</span>
+              <div style={{ display: "grid", gap: "6px", justifyItems: "start" }}>
+                <span className="stars empty">
+                  <svg>
+                    <use href="#i-star"></use>
+                  </svg>
+                  <svg>
+                    <use href="#i-star"></use>
+                  </svg>
+                  <svg>
+                    <use href="#i-star"></use>
+                  </svg>
+                  <svg>
+                    <use href="#i-star"></use>
+                  </svg>
+                  <svg>
+                    <use href="#i-star"></use>
+                  </svg>
+                </span>
+                <span className="pend">média e total de avaliações reais</span>
+              </div>
+            </div>
+            <ReviewFilter items={product.filters} value={filter} onChange={setFilter} />
+            <div className="reviews" id="reviews">
+              <Reviews product={product} filter={filter} />
+            </div>
+          </div>
+        </section>
+
         <section className="sec faq-section" id="faq">
           <div className="wrap faq-grid">
             <div className="sec-head rv">
@@ -904,7 +928,7 @@ export function PerolPage() {
               {product.short} · {selectedKit.d}
             </b>
             <span id="stickyPrice">
-              {PRICES[productId][kit] === null ? "Preço a definir" : money(PRICES[productId][kit])}
+              {prices[productId][kit] === null ? "Preço a definir" : money(prices[productId][kit])}
             </span>
           </div>
           <Button
