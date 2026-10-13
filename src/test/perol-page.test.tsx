@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { PerolPage } from "@/components/perol/PerolPage";
-import { CHECKOUT, PRICES, PRICES_5L } from "@/content/flotador";
+import { CHECKOUT, PRICES, PRICES_5L, PRODUCTS, discountPct } from "@/content/flotador";
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
@@ -37,16 +37,60 @@ describe("Página importada do modelo Perol", () => {
     expect(window.location.hash).toBe("#lavix");
   });
 
-  it("altera o volume dos kits e preserva a escolha ao trocar de produto", () => {
-    render(<PerolPage />);
-    fireEvent.click(screen.getByRole("radio", { name: "5 L" }));
-    expect(document.querySelector("#kitName")).toHaveTextContent("6 galões de 5 L");
-    expect(screen.getByText("30 litros")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
-    expect(document.querySelector("#kitName")).toHaveTextContent("Lavix · 6 galões de 5 L");
-    fireEvent.click(screen.getByRole("radio", { name: "1 L" }));
+  it("no 5 L não há caixa com 6: a escolha cai na caixa com 2 galões e segue ao trocar de produto", () => {
+    const { container } = render(<PerolPage />);
     expect(document.querySelector("#kitName")).toHaveTextContent("6 frascos de 1 L");
-    expect(screen.getByText("6 litros")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "5 L" }));
+    expect(within(container.querySelector("#kits")!).getAllByRole("radio")).toHaveLength(2);
+    expect(document.querySelector("#kitName")).toHaveTextContent("2 galões de 5 L");
+    expect(screen.getByRole("heading", { name: "Caixa com 2 galões" })).toBeInTheDocument();
+    expect(screen.getByText("10 litros")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
+    expect(document.querySelector("#kitName")).toHaveTextContent("Lavix · 2 galões de 5 L");
+    fireEvent.click(screen.getByRole("radio", { name: "1 L" }));
+    expect(document.querySelector("#kitName")).toHaveTextContent("2 frascos de 1 L");
+    expect(screen.getByText("2 litros")).toBeInTheDocument();
+  });
+
+  it("troca a galeria pelas fotos do galão ao escolher 5 L", () => {
+    render(<PerolPage />);
+    expect(screen.getByAltText("F5 Flotador Universal, foto 1")).toHaveAttribute(
+      "src",
+      "/img/f5-1l-frente.webp",
+    );
+    fireEvent.click(screen.getByRole("radio", { name: "5 L" }));
+    expect(screen.getByAltText("F5 Flotador Universal, foto 1")).toHaveAttribute(
+      "src",
+      "/img/f5-5l-frente.webp",
+    );
+    expect(document.querySelector("#stickyImg")).toHaveAttribute("src", "/img/f5-5l-frente.webp");
+  });
+
+  it("mostra o preço 'de' riscado e o desconto só nos kits que têm preço de comparação", () => {
+    expect(discountPct(6990, 7998)).toBe(12);
+    expect(discountPct(6990, undefined)).toBe(0);
+    expect(discountPct(null, 7998)).toBe(0);
+    expect(discountPct(8000, 7998)).toBe(0);
+    render(<PerolPage />);
+    const one = screen.getByRole("radio", { name: /1 un\./ });
+    const two = screen.getByRole("radio", { name: /2 un\./ });
+    expect(one.querySelector(".was s")).toBeNull();
+    expect(two.querySelector(".was s")).toHaveTextContent(/79,98/);
+    expect(two.querySelector(".off")).toHaveTextContent("-12%");
+    fireEvent.click(two);
+    expect(document.querySelector(".total-price .off")).toHaveTextContent("-12%");
+    expect(document.querySelector("#totalPrice")).toHaveTextContent(/69,90/);
+    expect(document.querySelector("#stickyPrice .sp-final")).toHaveTextContent(/69,90/);
+  });
+
+  it("abre prazos, frete e garantia no popup da garantia", async () => {
+    const user = userEvent.setup();
+    render(<PerolPage />);
+    await user.click(screen.getByRole("button", { name: /Garantia de 7 dias\. Ver prazos/ }));
+    const dialog = await screen.findByRole("dialog", { name: "Garantia de 7 dias" });
+    expect(dialog).toHaveTextContent("Frete pago + seguro de entrega3 a 8 dias");
+    expect(dialog).toHaveTextContent("Frete grátis5 a 15 dias");
+    expect(dialog).toHaveTextContent("3x sem juros");
   });
 
   it("usa preços independentes por volume e calcula o preço por litro do galão", () => {
@@ -103,7 +147,7 @@ describe("Página importada do modelo Perol", () => {
   it("atualiza o comparador por controle acessível", () => {
     render(<PerolPage />);
     fireEvent.click(screen.getByRole("radio", { name: "Lavix" }));
-    const slider = screen.getByRole("slider", { name: /Toalha de hotel/ });
+    const slider = screen.getByRole("slider", { name: /Jogo de lençol/ });
     fireEvent.keyDown(slider, { key: "ArrowRight" });
     expect(slider).toHaveAttribute("aria-valuenow", "51");
     expect(slider).toHaveAttribute("aria-valuetext", "51% antes e 49% depois");
@@ -116,17 +160,15 @@ describe("Página importada do modelo Perol", () => {
 
   it("monta o comparador do F5 com o par de fotos antes e depois", () => {
     render(<PerolPage />);
-    const slider = screen.getByRole("slider", { name: /Pisos · galão/ });
+    const slider = screen.getByRole("slider", { name: /Assadeira de inox/ });
     const compare = slider.closest(".compare")!;
     expect(compare).toHaveAttribute("data-photos");
-    expect(within(compare as HTMLElement).getByAltText("Pisos · galão: antes")).toHaveAttribute(
-      "src",
-      "/img/f5-comparacao-piso-antes.webp",
-    );
-    expect(within(compare as HTMLElement).getByAltText("Pisos · galão: depois")).toHaveAttribute(
-      "src",
-      "/img/f5-comparacao-piso-depois.webp",
-    );
+    expect(
+      within(compare as HTMLElement).getByAltText("Assadeira de inox · gordura: antes"),
+    ).toHaveAttribute("src", "/img/f5-ba-inox-antes.webp");
+    expect(
+      within(compare as HTMLElement).getByAltText("Assadeira de inox · gordura: depois"),
+    ).toHaveAttribute("src", "/img/f5-ba-inox-depois.webp");
     fireEvent.keyDown(slider, { key: "ArrowLeft" });
     expect(compare.getAttribute("style")).toContain("--x: 49%");
   });
@@ -147,13 +189,13 @@ describe("Página importada do modelo Perol", () => {
   it("abre FAQ pelo teclado e mantém a associação entre pergunta e resposta", async () => {
     const user = userEvent.setup();
     render(<PerolPage />);
-    const question = screen.getByRole("button", { name: "Precisa diluir?" });
+    const question = screen.getByRole("button", { name: "Quanto rende 1 litro?" });
     expect(question).toHaveAttribute("aria-expanded", "false");
     question.focus();
     await user.keyboard("{Enter}");
     expect(question).toHaveAttribute("aria-expanded", "true");
     const answer = document.getElementById(question.getAttribute("aria-controls")!);
-    expect(answer).toHaveTextContent("diluição recomendada");
+    expect(answer).toHaveTextContent("rendimento por litro");
     await user.keyboard("{Enter}");
     expect(question).toHaveAttribute("aria-expanded", "false");
   });
@@ -183,7 +225,13 @@ describe("Página importada do modelo Perol", () => {
     const kids = [...container.querySelector("#comprar .info")!.children].map(
       (el) => el.className || el.tagName,
     );
-    expect(kids.slice(0, 5)).toEqual(["H1", "rating-row", "eyebrow desc-title", "sub", "ticks"]);
+    expect(kids.slice(0, 5)).toEqual([
+      "H1",
+      "rating-row rating-proof",
+      "eyebrow desc-title",
+      "sub",
+      "ticks",
+    ]);
   });
   it("cada passo do mecanismo abre um popup com o detalhe ao clicar", async () => {
     const user = userEvent.setup();
@@ -193,10 +241,31 @@ describe("Página importada do modelo Perol", () => {
     await user.click(passo);
     expect(await screen.findByText(/lado que se liga à gordura/)).toBeInTheDocument();
   });
-  it("sem dado de avaliação, mostra o campo Pendente e não inventa nota", () => {
+  it("mostra a avaliação do conteúdo: rostos, estrelas, total e selo de verificado", () => {
     const { container } = render(<PerolPage />);
     const row = container.querySelector(".rating-row")!;
-    expect(row).toHaveTextContent("–,–");
-    expect(row.querySelector(".pend")).toBeInTheDocument();
+    expect(row).toHaveTextContent("+8 mil");
+    expect(row).toHaveTextContent("avaliações verificadas");
+    expect(row.querySelectorAll(".rp-face")).toHaveLength(3);
+    expect(row.querySelectorAll(".rp-face img[data-on]")).toHaveLength(3);
+    expect(
+      within(row as HTMLElement).getByRole("img", { name: "Avaliações verificadas" }),
+    ).toBeInTheDocument();
+    expect(row.querySelector(".pend")).toBeNull();
+    expect(container.querySelector(".rev-head .big")).toHaveTextContent("+8 mil");
+  });
+  it("sem dado de avaliação, mostra o campo Pendente e não inventa nota", () => {
+    const rating = PRODUCTS.f5.rating!;
+    delete PRODUCTS.f5.rating;
+    try {
+      const { container } = render(<PerolPage />);
+      const row = container.querySelector(".rating-row")!;
+      expect(row).toHaveTextContent("–,–");
+      expect(row.querySelector(".pend")).toBeInTheDocument();
+      expect(container.querySelector(".rev-head .big")).toHaveTextContent("–,–");
+      expect(container.querySelector(".rev-head .pend")).toBeInTheDocument();
+    } finally {
+      PRODUCTS.f5.rating = rating;
+    }
   });
 });

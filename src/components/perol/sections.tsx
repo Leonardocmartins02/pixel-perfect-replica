@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
+  compareForVolume,
+  discountPct,
+  GUARANTEE_DAYS,
+  PAYMENT,
   pricesForVolume,
+  SHIPPING,
   type Volume,
   type KitId,
   type PerolKit,
@@ -8,6 +13,13 @@ import {
   type ProductId,
 } from "@/content/flotador";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
@@ -23,6 +35,196 @@ export function Sym({ name }: { name: string }) {
 }
 export function Pending({ children }: { children: ReactNode }) {
   return <span className="pend">{children}</span>;
+}
+/** Selo azul de "verificado" (as cores são as do selo, por isso ficam no próprio SVG). */
+export function VerifiedBadge({
+  size = 18,
+  label = "Avaliações verificadas",
+}: {
+  size?: number;
+  label?: string;
+}) {
+  const petals = Array.from({ length: 8 }, (_, i) => {
+    const angle = (i * Math.PI) / 4;
+    return { cx: 12 + Math.cos(angle) * 6.2, cy: 12 + Math.sin(angle) * 6.2 };
+  });
+  return (
+    <svg
+      className="verified"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
+    >
+      <g fill="#0095F6">
+        <circle cx="12" cy="12" r="7.6" />
+        {petals.map((petal, i) => (
+          <circle key={i} cx={petal.cx} cy={petal.cy} r="4.1" />
+        ))}
+      </g>
+      <path
+        d="M7.9 12.3l2.7 2.7 5.5-5.6"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+/** Cinco estrelas; sem nota ficam vazias, e as que passam da nota ficam apagadas. */
+export function Stars({
+  score,
+  className = "",
+}: {
+  score?: number | undefined;
+  className?: string;
+}) {
+  return (
+    <span className={`stars ${score ? "" : "empty"} ${className}`.trim()}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <svg key={n} className={score && n > Math.round(score) ? "off" : ""} aria-hidden="true">
+          <use href="#i-star" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+const FACE_SWAP_MS = 4000;
+/** Três rostos sobrepostos; a cada 4 s um deles troca por outra foto da lista (fade no CSS). */
+function FaceStack({ faces, verified }: { faces: string[]; verified: boolean }) {
+  const slots = Math.min(3, faces.length);
+  const [shown, setShown] = useState(() => Array.from({ length: slots }, (_, i) => i));
+  const slot = useRef(0);
+  const next = useRef(slots);
+  useEffect(() => {
+    if (faces.length <= slots) return;
+    const timer = window.setInterval(() => {
+      const target = slot.current % slots;
+      const face = next.current % faces.length;
+      slot.current += 1;
+      next.current += 1;
+      setShown((current) => current.map((value, i) => (i === target ? face : value)));
+    }, FACE_SWAP_MS);
+    return () => window.clearInterval(timer);
+  }, [faces.length, slots]);
+  return (
+    <span className="rp-stack">
+      {shown.map((active, position) => (
+        <span className="rp-face" key={position}>
+          {faces.map((face, i) => (
+            <img
+              key={face}
+              src={img(face)}
+              alt=""
+              width={40}
+              height={40}
+              loading={i < slots ? "eager" : "lazy"}
+              data-on={i === active ? "" : undefined}
+            />
+          ))}
+        </span>
+      ))}
+      {verified && (
+        <span className="rp-badge">
+          <VerifiedBadge size={18} />
+        </span>
+      )}
+    </span>
+  );
+}
+/** Avaliação abaixo do título: rostos, estrelas e total; sem dado, o campo fica "Pendente". */
+export function RatingProof({ rating }: { rating: ProductContent["rating"] }) {
+  if (!rating)
+    return (
+      <div className="rating-row">
+        <Stars />
+        <b className="rating-n">–,–</b>
+        <span className="rating-txt">avaliações reais</span>
+        <span className="pend">nota e nº de avaliações</span>
+      </div>
+    );
+  return (
+    <div className="rating-row rating-proof">
+      {rating.faces && rating.faces.length > 0 && (
+        <FaceStack faces={rating.faces} verified={!!rating.verified} />
+      )}
+      <span className="rp-text">
+        <Stars score={rating.score} />
+        <span className="rp-line">
+          <b className="rating-n">{rating.countLabel}</b>
+          <span className="rating-txt">avaliações verificadas</span>
+          {rating.verified && !rating.faces?.length && <VerifiedBadge size={15} />}
+        </span>
+      </span>
+    </div>
+  );
+}
+/** Popup padrão da página (Dialog do shadcn): rótulo, título, texto de apoio e o conteúdo. */
+export function InfoDialog({
+  trigger,
+  eyebrow,
+  title,
+  lead,
+  children,
+  onOpenChange,
+}: {
+  trigger: ReactNode;
+  eyebrow: string;
+  title: string;
+  lead?: string | undefined;
+  children?: ReactNode;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  return (
+    <Dialog {...(onOpenChange ? { onOpenChange } : {})}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="perol-dialog" overlayClassName="perol-dialog-overlay">
+        <span className="pd-eyebrow">{eyebrow}</span>
+        <DialogTitle className="pd-title">{title}</DialogTitle>
+        {lead ? (
+          <DialogDescription className="pd-lead">{lead}</DialogDescription>
+        ) : (
+          <DialogDescription className="sr-only">{title}</DialogDescription>
+        )}
+        {children}
+      </DialogContent>
+    </Dialog>
+  );
+}
+/** Prazos de entrega, garantia e pagamento (conteúdo do popup "Compra segura"). */
+export function ShippingInfo() {
+  return (
+    <dl className="pd-list">
+      <div>
+        <dt>{SHIPPING.paid.label}</dt>
+        <dd>
+          <b>{SHIPPING.paid.days}</b>
+        </dd>
+      </div>
+      <div>
+        <dt>{SHIPPING.free.label}</dt>
+        <dd>
+          <b>{SHIPPING.free.days}</b>
+        </dd>
+      </div>
+      <div>
+        <dt>Garantia</dt>
+        <dd>
+          <b>{GUARANTEE_DAYS} dias</b> após o recebimento. Se o produto não atender, você recebe seu
+          dinheiro de volta.
+        </dd>
+      </div>
+      <div>
+        <dt>Pagamento</dt>
+        <dd>
+          PIX ou cartão em até <b>{PAYMENT.cardNoInterest}x sem juros</b> (até {PAYMENT.cardMax}x
+          com juros)
+        </dd>
+      </div>
+    </dl>
+  );
 }
 function Jugs({ count }: { count: number }) {
   return (
@@ -43,19 +245,27 @@ export function KitOption({
   volume?: Volume;
 }) {
   const price = pricesForVolume(volume)[productId][item.id];
-  const base = pricesForVolume(volume)[productId].u1;
-  const savings = price !== null && base !== null ? base * item.n - price : 0;
+  const compare = compareForVolume(volume)[productId][item.id];
+  const off = discountPct(price, compare);
   return (
     <RadioGroupItem className="kit" value={item.id}>
       {item.flag && <span className={`flag ${item.navy ? "navy" : ""}`}>{item.flag}</span>}
       <Jugs count={item.n} />
       <span className="q">{item.q}</span>
       <span className="d">{item.d}</span>
+      {/* sem desconto o espaço continua reservado, para os preços dos kits ficarem alinhados */}
+      {off > 0 ? (
+        <span className="was">
+          <s aria-label={`de ${money(compare!)}`}>{money(compare!)}</s>
+          <span className="off">-{off}%</span>
+        </span>
+      ) : (
+        <span className="was" aria-hidden="true" />
+      )}
       <span className="pr">{money(price)}</span>
       <span className="pl">
         {price === null ? "R$ ––/L" : `${money(Math.round(price / (item.n * volume)))}/L`}
       </span>
-      {savings > 0 && <span className="save">economize {money(savings)}</span>}
     </RadioGroupItem>
   );
 }
@@ -71,12 +281,20 @@ export function OfferCard({
   onBuy: (id: KitId) => void;
 }) {
   const price = pricesForVolume(volume)[productId][item.id];
+  const compare = compareForVolume(volume)[productId][item.id];
+  const off = discountPct(price, compare);
   return (
-    <article className={`oc2 rv ${item.id === "cx6" ? "hl" : ""}`}>
+    <article className={`oc2 rv ${item.flag === "Melhor custo" ? "hl" : ""}`}>
       {item.flag && <span className="flag">{item.flag}</span>}
       <Jugs count={item.n} />
       <h3>{item.title}</h3>
       <span className="d">{item.d}</span>
+      {off > 0 && (
+        <span className="was">
+          <s aria-label={`de ${money(compare!)}`}>{money(compare!)}</s>
+          <span className="off">-{off}% OFF</span>
+        </span>
+      )}
       <span className="pr">{money(price)}</span>
       <span className="pl">
         {price === null
@@ -238,10 +456,12 @@ export function SurfaceIcons({ items }: { items: [string, string][] }) {
     </>
   );
 }
-// Painel de dados: o que já é confirmado ganha destaque; o que depende de laudo/ficha vira um campo
-// vazio marcado como Pendente (sem medidor, que sugeria um resultado parcial que não existe).
+// Painel de dados: o dado `hero` ganha o número grande; os demais confirmados viram cartões que abrem
+// a explicação num popup; o que depende de laudo/ficha continua como campo vazio marcado Pendente.
 export function Stats({ product }: { product: ProductContent }) {
   const confirmed = product.stats.filter((item) => item.real);
+  const hero = confirmed.filter((item) => item.hero);
+  const specs = confirmed.filter((item) => !item.hero);
   const waiting = product.stats.filter((item) => !item.real);
   return (
     <>
@@ -256,7 +476,7 @@ export function Stats({ product }: { product: ProductContent }) {
         </div>
       </div>
       <div className="stats-real">
-        {confirmed.map((item) => (
+        {hero.map((item) => (
           <div className="stat real rv" key={item.k}>
             <b className="v">{item.v}</b>
             <span className="k">{item.k}</span>
@@ -265,6 +485,35 @@ export function Stats({ product }: { product: ProductContent }) {
         ))}
       </div>
       <ul className="stats-wait">
+        {specs.map((item) => (
+          <li className="stat spec rv" key={item.k}>
+            <InfoDialog
+              eyebrow={`Fonte: ${item.src}`}
+              title={`${item.v} · ${item.k}`}
+              lead={item.info}
+              trigger={
+                <button
+                  type="button"
+                  className="spec-btn"
+                  aria-label={`${item.v} ${item.sub ?? ""} ${item.k}. Ver detalhes`}
+                >
+                  <span className="v">
+                    {item.v}
+                    {item.sub && <small>{item.sub}</small>}
+                  </span>
+                  <span className="k">{item.k}</span>
+                  <span className="spec-src">
+                    <Sym name="flask" />
+                    {item.src}
+                    <span className="spec-more" aria-hidden="true">
+                      +
+                    </span>
+                  </span>
+                </button>
+              }
+            />
+          </li>
+        ))}
         {waiting.map((item) => (
           <li className="stat wait rv" key={item.k}>
             <span className="v" aria-label="valor pendente">
@@ -275,6 +524,44 @@ export function Stats({ product }: { product: ProductContent }) {
           </li>
         ))}
       </ul>
+    </>
+  );
+}
+/** Cartões da ficha técnica: cada um abre a tabela completa (`details`) num popup. */
+export function StudyCards({ product }: { product: ProductContent }) {
+  return (
+    <>
+      {product.study.map((study) => (
+        <InfoDialog
+          key={study.h}
+          eyebrow={`${study.tag} · ${product.name}`}
+          title={study.h}
+          lead={study.p}
+          trigger={
+            <button type="button" className="study-card rv">
+              <span className="eyebrow">{study.tag}</span>
+              <h3>{study.h}</h3>
+              <p>{study.p}</p>
+              <span className="pin">
+                <Sym name="flask" />
+                {study.pin}
+              </span>
+              <span className="study-open">
+                Ver ficha completa <span aria-hidden="true">+</span>
+              </span>
+            </button>
+          }
+        >
+          <dl className="pd-list">
+            {study.details.map((row) => (
+              <div key={row.k}>
+                <dt>{row.k}</dt>
+                <dd>{row.v}</dd>
+              </div>
+            ))}
+          </dl>
+        </InfoDialog>
+      ))}
     </>
   );
 }
