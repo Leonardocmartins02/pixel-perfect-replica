@@ -117,7 +117,7 @@ export const flotador: FlotadorConfig = {
   ],
 };
 
-// Conteúdo recebido em perol-lp-github.zip. Condições comerciais seguem pendentes.
+// Conteúdo recebido em perol-lp-github.zip; preços, frete, garantia e ficha técnica vêm da prévia "Prévia LP Perol".
 // PRICES usa centavos inteiros, como o restante do projeto.
 export type ProductId = "f5" | "lx";
 export type Volume = 1 | 5;
@@ -145,6 +145,14 @@ export interface ObjectionStage {
   title: string;
   items: { b: string; s?: string }[];
 }
+/** Guia rápido do ambiente: dose, passo a passo e o kit indicado (abre no popup do cartão). */
+export interface EnvGuide {
+  dose: string;
+  doseNote: string;
+  steps: string[];
+  tip?: string;
+  pick: { volume: Volume; kit: KitId; why: string };
+}
 export interface ProductContent {
   name: string;
   short: string;
@@ -153,7 +161,9 @@ export interface ProductContent {
   h1b: string;
   sub: string;
   ticks: string[];
+  /** Fotos da embalagem de 1 L; `gallery5` são as do galão de 5 L. */
   gallery: string[];
+  gallery5: string[];
   promo: string[];
   pb4a: string;
   pb4b: string;
@@ -169,29 +179,56 @@ export interface ProductContent {
   mechLead: string;
   mech: { b: string; p: string }[];
   mechLabels: [string, string, string, string];
-  stats: { v: string; k: string; src: string; real?: boolean }[];
-  study: { h: string; p: string; pin: string }[];
+  /**
+   * real = dado confirmado (sem isso o campo aparece como "Pendente"); hero = número grande em destaque;
+   * sub = rótulo curto sob o valor; info = explicação que abre no popup.
+   */
+  stats: {
+    v: string;
+    sub?: string;
+    k: string;
+    src: string;
+    real?: boolean;
+    hero?: boolean;
+    info?: string;
+  }[];
+  /** Cartões da ficha técnica; `details` é a tabela que abre no popup. */
+  study: { tag: string; h: string; p: string; pin: string; details: { k: string; v: string }[] }[];
   /** before/after = par de fotos da mesma cena; ausente = quadro "Foto real" pendente. */
   ba: { t: string; s: string; before?: string; after?: string }[];
-  /** Nota real, total de avaliações e onde elas estão; ausente = campo "Pendente" (nunca inventar). */
-  rating?: { score: number; count: number; source: string };
+  /** Nota e total de avaliações; ausente = campo "Pendente" (nunca inventar). `faces` = fotos do rodízio. */
+  rating?: {
+    score: number;
+    count: number;
+    countLabel: string;
+    verified?: boolean;
+    faces?: string[];
+  };
   whereTitle: string;
   whereLead: string;
   colA: string;
   iconsA: [string, string][];
   iconsB: [string, string][];
   photos: [file: string, label: string, description?: string, icon?: string][];
+  /** Guia por ambiente, indexado pelo arquivo de `photos`; sem guia o cartão não abre popup. */
+  envGuide?: Record<string, EnvGuide>;
   filters: string[];
   faq: { q: string; a?: string; p?: string }[];
 }
 export const PRICES: Record<ProductId, Record<KitId, number | null>> = {
-  f5: { u1: null, u2: null, cx6: null },
-  lx: { u1: null, u2: null, cx6: null },
+  f5: { u1: 3990, u2: 6990, cx6: 18497 },
+  lx: { u1: 5990, u2: 10697, cx6: 24700 },
 };
 export const CHECKOUT: Record<ProductId, Record<KitId, string | null>> = {
   f5: { u1: null, u2: null, cx6: null },
   lx: { u1: null, u2: null, cx6: null },
 };
+export const SHIPPING = {
+  paid: { label: "Frete pago + seguro de entrega", days: "3 a 8 dias" },
+  free: { label: "Frete grátis", days: "5 a 15 dias" },
+};
+export const PAYMENT = { methods: ["PIX", "CARTÃO"], cardNoInterest: 3, cardMax: 12 };
+export const GUARANTEE_DAYS = 7;
 export const KITS: PerolKit[] = [
   {
     id: "u1",
@@ -221,11 +258,28 @@ export const KITS: PerolKit[] = [
     perks: ["6 litros", "Menor preço por litro", "Ideal para empresas"],
   },
 ];
-// Cada volume tem preço e destino próprios; os valores de 1 L existentes são preservados.
+// Cada volume tem preço e destino próprios. No 5 L não há caixa com 6: o kit maior é a caixa com 2 galões.
 export const PRICES_5L: typeof PRICES = {
-  f5: { u1: null, u2: null, cx6: null },
-  lx: { u1: null, u2: null, cx6: null },
+  f5: { u1: 11990, u2: 22700, cx6: null },
+  lx: { u1: 14990, u2: 24700, cx6: null },
 };
+// Preço "de" (riscado) por kit, em centavos; sem valor = sem desconto exibido.
+type ComparePrices = Record<ProductId, Partial<Record<KitId, number>>>;
+export const COMPARE_PRICES: ComparePrices = {
+  f5: { u2: 7998, cx6: 23990 },
+  lx: { u2: 12090, cx6: 35990 },
+};
+export const COMPARE_PRICES_5L: ComparePrices = {
+  f5: { u2: 28990 },
+  lx: { u2: 29997 },
+};
+export const compareForVolume = (volume: Volume) =>
+  volume === 1 ? COMPARE_PRICES : COMPARE_PRICES_5L;
+/** Desconto em % inteiro (arredondado para baixo); 0 quando não há preço "de" maior que o atual. */
+export const discountPct = (price: number | null, compare?: number) =>
+  price !== null && compare && compare > price
+    ? Math.floor(((compare - price) / compare) * 100)
+    : 0;
 export const CHECKOUT_5L: typeof CHECKOUT = {
   f5: { u1: null, u2: null, cx6: null },
   lx: { u1: null, u2: null, cx6: null },
@@ -239,7 +293,20 @@ export const kitsForVolume = (volume: Volume): PerolKit[] =>
         ...item,
         d: `${item.n} ${item.n === 1 ? "galão" : "galões"} de 5 L`,
         perks: [`${item.n * volume} litros`, ...item.perks.slice(1)],
-      }));
+      }))
+        .filter((item) => item.id !== "cx6")
+        .map((item) =>
+          item.id === "u2"
+            ? {
+                ...item,
+                q: "Caixa",
+                title: "Caixa com 2 galões",
+                flag: "Melhor custo",
+                navy: false,
+                perks: ["10 litros", "Menor preço por litro", "Ideal para uso profissional"],
+              }
+            : item,
+        );
 
 export const DIVS = [
   "Institucional",
@@ -257,6 +324,20 @@ export const DIVS = [
   "Linha Tall",
 ];
 
+// Fotos de clientes do rodízio ao lado da nota (public/img/cliente-N.webp).
+const CLIENT_FACES = Array.from({ length: 7 }, (_, i) => `cliente-${i + 1}`);
+// O Lavix só tem fotos do galão: 1 L e 5 L usam a mesma galeria.
+const LX_GALLERY = [
+  "lx-5l-frente",
+  "lx-5l-angulo-1",
+  "lx-5l-angulo-2",
+  "lx-5l-angulo-3",
+  "lx-5l-rotulo",
+  "lx-5l-tampa",
+];
+export const galleryForVolume = (product: ProductContent, volume: Volume) =>
+  volume === 5 ? product.gallery5 : product.gallery;
+
 export const PRODUCTS: Record<ProductId, ProductContent> = {
   f5: {
     name: "F5 Flotador Universal",
@@ -270,7 +351,22 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       "Um frasco para pisos, inox, vidros, azulejos e louças",
       "Aplique com pano, mop, pulverizador ou máquina",
     ],
-    gallery: ["f5-close", "f5-galao-rotulo", "f5-galao-detalhe"],
+    gallery: [
+      "f5-1l-frente",
+      "f5-1l-angulo-1",
+      "f5-1l-angulo-2",
+      "f5-1l-angulo-3",
+      "f5-1l-rotulo",
+      "f5-1l-tampa",
+    ],
+    gallery5: [
+      "f5-5l-frente",
+      "f5-5l-angulo-1",
+      "f5-5l-angulo-2",
+      "f5-5l-angulo-3",
+      "f5-5l-rotulo",
+      "f5-5l-tampa",
+    ],
     promo: [
       "Envio para todo o Brasil",
       "Compra direta, sem cadastro",
@@ -287,7 +383,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         proof: ["Ação de flotação"],
         pend: "% de remoção do laudo",
         stage: {
-          img: "f5-pour",
+          img: "f5-cena-gordura-inox",
           scene: true,
           kind: "steps",
           title: "Como a sujeira sai",
@@ -304,7 +400,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "O rótulo indica uso em pisos frios, cerâmica, porcelanato, azulejos, inox, vidros, fórmica e acrílico. Na primeira vez, teste numa área pequena e escondida.",
         proof: ["Pisos frios", "Inox", "Vidros", "Azulejos"],
         stage: {
-          img: "f5-mop",
+          img: "f5-cena-superficies",
           scene: true,
           kind: "tags",
           title: "Superfícies indicadas no rótulo",
@@ -327,7 +423,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         proof: ["Diluível"],
         pend: "custo por litro diluído",
         stage: {
-          img: "f5-counter",
+          img: "f5-cena-caixa-6",
           scene: true,
           kind: "spec",
           title: "Na caixa",
@@ -343,7 +439,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "A Perol tem certificação ISO 9001 e atende 13 divisões do mercado profissional, de hospitais e cozinhas industriais a aviação e hotelaria.",
         proof: ["ISO 9001", "13 divisões"],
         stage: {
-          img: "f5-steel",
+          img: "f5-cena-laboratorio",
           scene: true,
           kind: "spec",
           title: "Quem fabrica",
@@ -356,15 +452,18 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       {
         q: "E se der problema com o pedido?",
         h: "Compra segura do clique à entrega",
-        p: "Você paga direto no checkout seguro e acompanha o envio. Prazo de entrega e garantia aparecem aqui antes da compra.",
-        proof: ["Checkout seguro"],
-        pend: "prazo e garantia",
+        p: "Você paga direto no checkout seguro e acompanha o envio. Frete pago com seguro chega em 3 a 8 dias, o grátis em 5 a 15 dias, e você tem 7 dias de garantia.",
+        proof: ["Checkout seguro", "Garantia de 7 dias"],
         stage: {
           img: "f5-lobby",
           scene: true,
           kind: "steps",
           title: "Do clique à entrega",
-          items: [{ b: "Pagamento direto no checkout seguro" }, { b: "Você acompanha o envio" }],
+          items: [
+            { b: "Pagamento direto no checkout seguro" },
+            { b: "Entrega em 3 a 8 dias com seguro" },
+            { b: "7 dias de garantia" },
+          ],
         },
       },
     ],
@@ -387,40 +486,93 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
     ],
     mechLabels: ["Superfície", "Sujeira", "Tensoativo", "Pano"],
     stats: [
-      { v: "—%", k: "de remoção de sujidade em teste padronizado", src: "laudo de eficácia" },
-      { v: "— m²", k: "limpos com 1 litro diluído", src: "rendimento por litro" },
-      { v: "1:—", k: "diluição para limpeza diária", src: "ficha técnica" },
+      {
+        v: "100 ml",
+        sub: "1:10",
+        k: "de F5 por litro de água · limpeza diária e manutenção",
+        src: "ficha técnica Perol",
+        real: true,
+        info: "Para o dia a dia, 1 parte de F5 para 10 de água: 100 ml de F5 em 1 litro de água no pulverizador. Aplique, espere a sujeira soltar e retire com pano limpo, sem enxágue.",
+      },
+      {
+        v: "200 ml",
+        sub: "1:5",
+        k: "de F5 por litro de água · limpeza leve",
+        src: "ficha técnica Perol",
+        real: true,
+        info: "Para sujeira leve em superfícies mais marcadas: 1 parte de F5 para 5 de água, ou seja, 200 ml de F5 em 1 litro de água.",
+      },
+      {
+        v: "500 ml",
+        sub: "1:2",
+        k: "de F5 por litro de água · limpeza pesada",
+        src: "ficha técnica Perol",
+        real: true,
+        info: "Para gordura, graxa, fuligem e encardido: 1 parte de F5 para 2 de água, ou seja, 500 ml de F5 em 1 litro de água. Teste antes numa área pequena.",
+      },
       {
         v: "24",
         k: "meses de validade a partir da fabricação",
         src: "rótulo do produto",
         real: true,
+        hero: true,
       },
     ],
     study: [
       {
-        h: "Teste de remoção de gordura",
-        p: "Resultado de bancada comparando a superfície antes e depois de uma aplicação, com o método e o laboratório citados.",
-        pin: "Laudo Perol ou laboratório parceiro",
+        tag: "Ficha técnica",
+        h: "Uso e diluição",
+        p: "Limpador multiuso flotador (APC). Diluído no pulverizador, age na hora e dispensa enxágue.",
+        pin: "Ficha técnica Perol",
+        details: [
+          { k: "Tipo", v: "Limpador flotador multiuso (APC)" },
+          { k: "pH", v: "Alcalino" },
+          { k: "Limpeza pesada", v: "1:2 · 500 ml de F5 por litro de água" },
+          { k: "Limpeza leve", v: "1:5 · 200 ml de F5 por litro de água" },
+          { k: "Manutenção diária", v: "1:10 · 100 ml de F5 por litro de água" },
+          { k: "Como usar", v: "Pulverize, deixe agir e retire com pano limpo. Sem enxágue." },
+          { k: "Embalagens", v: "1 L, 5 L, 20 L e 50 L" },
+          { k: "Validade", v: "24 meses a partir da fabricação" },
+        ],
       },
       {
-        h: "Compatibilidade com superfícies",
-        p: "Lista das superfícies testadas sem manchar ou opacar, e das que pedem cuidado, como alumínio anodizado e couro.",
-        pin: "Ficha técnica e FISPQ do produto",
+        tag: "Ficha técnica",
+        h: "Sujidades e superfícies",
+        p: "Remove gordura, graxa, óleo e encardido de superfícies laváveis, estofados e carpetes.",
+        pin: "Ficha técnica Perol",
+        details: [
+          {
+            k: "Sujidades",
+            v: "Gorduras, graxas, óleos, ceras, fuligem, resíduos orgânicos, manchas, incrustações e encardidos",
+          },
+          {
+            k: "Superfícies",
+            v: "Cerâmica, esmaltados, vitrificados, inox, alumínio, plásticos, PVC, fórmica e vinil",
+          },
+          { k: "Tecidos", v: "Estofados, carpetes, tapetes e couro" },
+          { k: "Cuidados", v: "Teste antes numa área pequena. Não misture com outros produtos." },
+        ],
       },
     ],
+    rating: { score: 5, count: 8000, countLabel: "+8 mil", verified: true, faces: CLIENT_FACES },
     ba: [
       {
-        t: "Azulejos · galão",
+        t: "Assadeira de inox · gordura",
         s: "Comparação ilustrativa",
-        before: "f5-comparacao-azulejo-antes",
-        after: "f5-comparacao-azulejo-depois",
+        before: "f5-ba-inox-antes",
+        after: "f5-ba-inox-depois",
       },
       {
-        t: "Pisos · galão",
+        t: "Azulejos · encardido",
         s: "Comparação ilustrativa",
-        before: "f5-comparacao-piso-antes",
-        after: "f5-comparacao-piso-depois",
+        before: "f5-ba-azulejo-antes",
+        after: "f5-ba-azulejo-depois",
+      },
+      {
+        t: "Estofado · mancha",
+        s: "Comparação ilustrativa",
+        before: "f5-ba-estofado-antes",
+        after: "f5-ba-estofado-depois",
       },
     ],
     whereTitle: "Do piso ao inox com o mesmo frasco",
@@ -448,19 +600,87 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       ["f5-steel", "Cozinhas industriais", "Superfícies laváveis na cozinha.", "kitchen"],
       ["f5-counter", "Casa e escritório", "Cuidados com os ambientes do dia a dia.", "home"],
     ],
+    envGuide: {
+      "f5-lobby": {
+        dose: "100 ml por litro",
+        doseNote: "Diluição 1:10 · manutenção diária",
+        steps: [
+          "Dilua 100 ml de F5 em 1 litro de água no pulverizador.",
+          "Pulverize em balcões, vidros, inox e pisos da recepção.",
+          "Espere alguns segundos e retire com pano limpo. Não precisa enxaguar.",
+        ],
+        tip: "Marcas de mão e gordura no balcão: use 200 ml por litro (1:5).",
+        pick: {
+          volume: 5,
+          kit: "u2",
+          why: "Recepção limpa todo dia: a caixa com 2 galões de 5 L rende a rotina do mês.",
+        },
+      },
+      "f5-mop": {
+        dose: "200 ml por litro",
+        doseNote: "Diluição 1:5 · limpeza leve de pisos",
+        steps: [
+          "Dilua 200 ml de F5 por litro de água no balde ou pulverizador.",
+          "Aplique com o mop sobre o piso, por áreas.",
+          "Recolha a sujeira com o mop ou pano úmido. Sem enxágue.",
+        ],
+        tip: "Piso encardido ou com gordura: suba para 500 ml por litro (1:2).",
+        pick: {
+          volume: 5,
+          kit: "u2",
+          why: "Piso de alto tráfego gasta mais: a caixa com 2 galões de 5 L tem o menor custo por litro.",
+        },
+      },
+      "f5-steel": {
+        dose: "500 ml por litro",
+        doseNote: "Diluição 1:2 · limpeza pesada",
+        steps: [
+          "Dilua 500 ml de F5 em 1 litro de água no pulverizador.",
+          "Pulverize sobre inox, coifas e bancadas com gordura.",
+          "Deixe agir alguns segundos e retire com pano limpo.",
+        ],
+        tip: "Na limpeza do dia a dia da cozinha, 200 ml por litro (1:5) já resolve.",
+        pick: {
+          volume: 5,
+          kit: "u2",
+          why: "Cozinha industrial usa a diluição mais forte: a caixa com 2 galões de 5 L é a mais econômica.",
+        },
+      },
+      "f5-counter": {
+        dose: "100 ml por litro",
+        doseNote: "Diluição 1:10 · uso diário",
+        steps: [
+          "Dilua 100 ml de F5 em 1 litro de água no pulverizador.",
+          "Use em pisos, azulejos, mesas, box e bancadas.",
+          "Passe o pano limpo e pronto. Não precisa enxaguar.",
+        ],
+        tip: "Teste antes numa área pequena e não misture com outros produtos.",
+        pick: {
+          volume: 1,
+          kit: "u2",
+          why: "Para casa e escritório, 2 frascos de 1 L rendem muitas limpezas.",
+        },
+      },
+    },
     filters: ["Todas", "Hotel", "Condomínio", "Restaurante", "Casa", "Empresa de limpeza"],
     faq: [
       {
         q: "Onde posso usar o F5 Flotador?",
         a: "Em superfícies laváveis: pisos frios, cerâmica, porcelanato, azulejos, inox, vidros, fórmica, acrílico, louças e box de banheiro. Teste numa área pequena antes.",
       },
-      { q: "Precisa diluir?", p: "diluição recomendada" },
+      {
+        q: "Precisa diluir?",
+        a: "Sim, no pulverizador, por litro de água: 100 ml de F5 (1:10) para a limpeza diária, 200 ml (1:5) para limpeza leve e 500 ml (1:2) para limpeza pesada.",
+      },
       { q: "Quanto rende 1 litro?", p: "rendimento por litro" },
       {
         q: "Qual a validade?",
         a: "24 meses a partir da data de fabricação, guardado na embalagem original, em local seco e arejado.",
       },
-      { q: "Em quantos dias chega?", p: "prazo e regiões" },
+      {
+        q: "Em quantos dias chega?",
+        a: "Com frete pago e seguro de entrega, de 3 a 8 dias. Com frete grátis, de 5 a 15 dias.",
+      },
       {
         q: "Posso misturar com outro produto?",
         a: "Não. O rótulo orienta não misturar com outros produtos e manter na embalagem original.",
@@ -479,7 +699,8 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       "Para algodão e tecidos mistos de cama, mesa e banho",
       "Na lavadora ou borrifado no tecido seco",
     ],
-    gallery: ["lx-pack", "lx-close", "lx-galao-lateral"],
+    gallery: LX_GALLERY,
+    gallery5: LX_GALLERY,
     promo: [
       "Envio para todo o Brasil",
       "Compra direta, sem cadastro",
@@ -496,7 +717,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         proof: ["Etapa final"],
         pend: "horas de fixação no teste",
         stage: {
-          img: "lx-pour-laundry",
+          img: "lx-cena-toalha",
           scene: true,
           kind: "steps",
           title: "Onde o Lavix entra",
@@ -513,7 +734,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "O rótulo indica uso em tecidos de algodão e tecidos mistos de cama, mesa e banho. Na primeira vez, teste numa parte escondida da peça.",
         proof: ["Algodão", "Tecidos mistos"],
         stage: {
-          img: "lx-towels",
+          img: "lx-cena-tecidos",
           scene: true,
           kind: "tags",
           title: "Tecidos indicados no rótulo",
@@ -533,7 +754,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         proof: ["Concentrado"],
         pend: "dose por kg de roupa",
         stage: {
-          img: "lx-front",
+          img: "lx-cena-caixa-6",
           scene: true,
           kind: "spec",
           title: "Concentrado",
@@ -549,7 +770,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "A Perol tem certificação ISO 9001 e uma divisão inteira dedicada a lavanderia, além de hotelaria e área hospitalar.",
         proof: ["ISO 9001", "Divisão lavanderia"],
         stage: {
-          img: "lx-machines",
+          img: "lx-cena-laboratorio",
           scene: true,
           kind: "spec",
           title: "Quem fabrica",
@@ -562,15 +783,18 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       {
         q: "E se der problema com o pedido?",
         h: "Compra segura do clique à entrega",
-        p: "Você paga direto no checkout seguro e acompanha o envio. Prazo de entrega e garantia aparecem aqui antes da compra.",
-        proof: ["Checkout seguro"],
-        pend: "prazo e garantia",
+        p: "Você paga direto no checkout seguro e acompanha o envio. Frete pago com seguro chega em 3 a 8 dias, o grátis em 5 a 15 dias, e você tem 7 dias de garantia.",
+        proof: ["Checkout seguro", "Garantia de 7 dias"],
         stage: {
           img: "lx-spray",
           scene: true,
           kind: "steps",
           title: "Do clique à entrega",
-          items: [{ b: "Pagamento direto no checkout seguro" }, { b: "Você acompanha o envio" }],
+          items: [
+            { b: "Pagamento direto no checkout seguro" },
+            { b: "Entrega em 3 a 8 dias com seguro" },
+            { b: "7 dias de garantia" },
+          ],
         },
       },
     ],
@@ -593,32 +817,99 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
     ],
     mechLabels: ["Tecido", "Fibra", "Fragrância", "Secagem"],
     stats: [
-      { v: "— h", k: "de perfume no tecido após a secagem", src: "teste de fixação" },
-      { v: "— kg", k: "de roupa perfumados com 1 litro", src: "rendimento por litro" },
-      { v: "— ml", k: "por kg de roupa seca", src: "ficha técnica" },
+      {
+        v: "Puro",
+        sub: "100% produto",
+        k: "sem diluir, pulverizado direto no tecido",
+        src: "ficha técnica Perol",
+        real: true,
+        info: "O Lavix Finalizador é usado puro. Pulverize dentro da secadora durante a secagem e, se quiser reforçar, sobre o tecido dentro do saco plástico antes de embalar.",
+      },
+      {
+        v: "Neutro",
+        sub: "pH",
+        k: "pH da fórmula, para algodão e tecidos mistos",
+        src: "ficha técnica Perol",
+        real: true,
+        info: "pH neutro: indicado para tecidos de algodão e mistos em lavanderias comerciais, hoteleiras e industriais.",
+      },
+      {
+        v: "1 e 5 L",
+        sub: "frasco e galão",
+        k: "embalagens disponíveis",
+        src: "ficha técnica Perol",
+        real: true,
+        info: "O Lavix Finalizador é vendido em frasco de 1 litro e galão de 5 litros, na fragrância Tradicional.",
+      },
       {
         v: "24",
         k: "meses de validade a partir da fabricação",
         src: "rótulo do produto",
         real: true,
+        hero: true,
       },
     ],
     study: [
       {
-        h: "Teste de fixação da fragrância",
-        p: "Avaliação do perfume no tecido em horas e dias após a secagem, com método e amostra descritos.",
-        pin: "Laudo Perol ou laboratório parceiro",
+        tag: "Ficha técnica",
+        h: "Aplicação e fixação",
+        p: "Odorizante de tecidos que fixa o perfume nas roupas. Usado puro, na secadora ou na embalagem.",
+        pin: "Ficha técnica Perol",
+        details: [
+          { k: "Tipo", v: "Odorizante de tecidos e roupas" },
+          { k: "Diluição", v: "Puro, sem diluir" },
+          { k: "Onde aplicar", v: "Pulverizado dentro da secadora, durante a secagem" },
+          { k: "Reforço", v: "Sobre o tecido, dentro do saco plástico, antes de embalar" },
+          { k: "Fragrância", v: "Tradicional" },
+          { k: "Embalagens", v: "1 L e 5 L" },
+        ],
       },
       {
-        h: "Compatibilidade com tecidos",
-        p: "Tecidos testados sem manchar ou alterar a cor, e a forma correta de aplicar em cada processo de lavanderia.",
-        pin: "Ficha técnica e FISPQ do produto",
+        tag: "Ficha técnica",
+        h: "pH e tecidos",
+        p: "Fórmula de pH neutro para algodão e tecidos mistos de cama, mesa e banho.",
+        pin: "Ficha técnica Perol",
+        details: [
+          { k: "pH", v: "Neutro" },
+          { k: "Tecidos", v: "Algodão e tecidos mistos" },
+          {
+            k: "Indicado para",
+            v: "Lavanderias comerciais, hoteleiras e industriais, e uso em casa",
+          },
+          {
+            k: "Dosagem",
+            v: "Pode variar conforme a sujidade das roupas e o tipo de processo de lavagem",
+          },
+          { k: "Validade", v: "24 meses a partir da fabricação" },
+        ],
       },
     ],
+    rating: { score: 5, count: 8000, countLabel: "+8 mil", verified: true, faces: CLIENT_FACES },
     ba: [
-      { t: "Toalha de hotel", s: "Ao sair da secadora" },
-      { t: "Jogo de lençol", s: "Após 7 dias guardado" },
-      { t: "Enxoval de pousada", s: "Na arrumação do quarto" },
+      {
+        t: "Jogo de lençol",
+        s: "Comparação ilustrativa",
+        before: "lx-ba-lencol-antes",
+        after: "lx-ba-lencol-depois",
+      },
+      {
+        t: "Camiseta",
+        s: "Comparação ilustrativa",
+        before: "lx-ba-camiseta-antes",
+        after: "lx-ba-camiseta-depois",
+      },
+      {
+        t: "Calça de linho",
+        s: "Comparação ilustrativa",
+        before: "lx-ba-calca-antes",
+        after: "lx-ba-calca-depois",
+      },
+      {
+        t: "Camisa social",
+        s: "Comparação ilustrativa",
+        before: "lx-ba-camisa-antes",
+        after: "lx-ba-camisa-depois",
+      },
     ],
     whereTitle: "O toque final da lavanderia profissional",
     whereLead: "Tecidos e ambientes indicados no rótulo do Lavix Finalizador.",
@@ -645,6 +936,68 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
       ["lx-spray", "Roupa de cama", "Lençóis e fronhas na etapa de finalização.", "sheet"],
       ["lx-front", "Rotina da casa", "Cuidados com os tecidos do dia a dia.", "home"],
     ],
+    envGuide: {
+      "lx-machines": {
+        dose: "Puro",
+        doseNote: "Sem diluir · direto na secadora",
+        steps: [
+          "Use o Lavix puro, sem misturar com água.",
+          "Pulverize dentro da secadora durante o processo de secagem.",
+          "Se quiser reforçar, pulverize sobre o tecido no saco plástico antes de embalar.",
+        ],
+        tip: "A dose pode variar conforme a sujidade e o processo de cada lavanderia.",
+        pick: {
+          volume: 5,
+          kit: "u2",
+          why: "Lavanderia usa todo dia: a caixa com 2 galões de 5 L tem o menor custo por litro.",
+        },
+      },
+      "lx-towels": {
+        dose: "Puro",
+        doseNote: "Sem diluir · sobre o tecido úmido",
+        steps: [
+          "Use o Lavix puro, sem misturar com água.",
+          "Pulverize sobre as toalhas ainda úmidas.",
+          "Coloque para secar como de costume.",
+        ],
+        tip: "Indicado para algodão e tecidos mistos.",
+        pick: {
+          volume: 5,
+          kit: "u2",
+          why: "Toalhas de hotel e pousada giram muito: 2 galões de 5 L dão conta.",
+        },
+      },
+      "lx-spray": {
+        dose: "Puro",
+        doseNote: "Sem diluir · antes de secar e embalar",
+        steps: [
+          "Use o Lavix puro, sem misturar com água.",
+          "Pulverize sobre lençóis e fronhas ainda úmidos e leve para secar.",
+          "Para guardar perfumado, pulverize de novo antes de embalar.",
+        ],
+        tip: "Indicado para algodão e tecidos mistos de cama.",
+        pick: {
+          volume: 5,
+          kit: "u1",
+          why: "Para enxoval de cama, 1 galão de 5 L é um bom começo.",
+        },
+      },
+      "lx-front": {
+        dose: "Puro",
+        doseNote: "Sem diluir · no fim da lavagem",
+        steps: [
+          "Use o Lavix puro, sem misturar com água.",
+          "Pulverize sobre a roupa ainda úmida, depois de lavar.",
+          "Deixe secar normalmente no varal ou na secadora.",
+        ],
+        tip: "Mantenha na embalagem original e não misture com outros produtos.",
+        pick: {
+          volume: 1,
+          kit: "u2",
+          why: "Para a roupa da casa, 2 frascos de 1 L são suficientes.",
+        },
+      },
+    },
     filters: ["Todas", "Hotel", "Pousada", "Lavanderia", "Casa", "Clínica"],
     faq: [
       {
@@ -660,7 +1013,10 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         q: "Qual a validade?",
         a: "24 meses a partir da data de fabricação, na embalagem original.",
       },
-      { q: "Em quantos dias chega?", p: "prazo e regiões" },
+      {
+        q: "Em quantos dias chega?",
+        a: "Com frete pago e seguro de entrega, de 3 a 8 dias. Com frete grátis, de 5 a 15 dias.",
+      },
       { q: "O perfume dura quanto tempo?", p: "teste de fixação" },
     ],
   },

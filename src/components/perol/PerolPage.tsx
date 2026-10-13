@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import {
   checkoutForVolume,
+  compareForVolume,
+  discountPct,
   DIVS,
+  galleryForVolume,
+  GUARANTEE_DAYS,
   kitsForVolume,
+  PAYMENT,
   type Volume,
   pricesForVolume,
   PRODUCTS,
+  SHIPPING,
   flotador,
   type KitId,
   type ProductId,
@@ -14,15 +20,20 @@ import { img, money } from "./format";
 import { getOfferReadiness } from "@/lib/offer";
 import {
   Sym,
-  Pending,
   OfferCard,
   Objections,
   Mechanism,
   MechSteps,
   SurfaceIcons,
   Stats,
+  StudyCards,
   Comparison,
   Reviews,
+  RatingProof,
+  Stars,
+  VerifiedBadge,
+  InfoDialog,
+  ShippingInfo,
 } from "./sections";
 import { Button } from "@/components/ui/button";
 import { ApplicationsCarousel } from "./ApplicationsCarousel";
@@ -43,7 +54,14 @@ export function PerolPage() {
   const [sticky, setSticky] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const product = PRODUCTS[productId];
-  const selectedKit = kits.find((item) => item.id === kit)!;
+  // O 5 L não tem caixa com 6: se o kit escolhido não existe no volume, cai no maior disponível.
+  const selectedKit = kits.find((item) => item.id === kit) ?? kits[kits.length - 1]!;
+  useEffect(() => {
+    if (selectedKit.id !== kit) setKit(selectedKit.id);
+  }, [selectedKit.id, kit]);
+  const price = prices[productId][selectedKit.id];
+  const compare = compareForVolume(volume)[productId][selectedKit.id];
+  const off = discountPct(price, compare);
   const selectProduct = (id: ProductId) => {
     setProductId(id);
     setFilter("Todas");
@@ -424,9 +442,9 @@ export function PerolPage() {
         <section className="pdp" id="comprar">
           <div className="wrap pdp-grid">
             <ProductGallery
-              key={productId}
+              key={`${productId}-${volume}`}
               name={product.name}
-              gallery={product.gallery}
+              gallery={galleryForVolume(product, volume)}
               chip={product.chip1}
             />
 
@@ -435,29 +453,7 @@ export function PerolPage() {
                 <span data-k="h1a">{product.h1a}</span>
                 <em data-k="h1b">{product.h1b}</em>
               </h1>
-              <div className="rating-row">
-                <span className={`stars ${product.rating ? "" : "empty"}`}>
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <svg
-                      key={n}
-                      className={
-                        product.rating && n > Math.round(product.rating.score) ? "off" : ""
-                      }
-                    >
-                      <use href="#i-star"></use>
-                    </svg>
-                  ))}
-                </span>
-                <b className="rating-n">
-                  {product.rating ? product.rating.score.toFixed(1).replace(".", ",") : "–,–"}
-                </b>
-                <span className="rating-txt">
-                  {product.rating
-                    ? `${product.rating.count} avaliações · ${product.rating.source}`
-                    : "avaliações reais"}
-                </span>
-                {!product.rating && <span className="pend">nota e nº de avaliações</span>}
-              </div>
+              <RatingProof rating={product.rating} />
               {/* rótulo só no mobile, onde a descrição desce para o fim da coluna e perde o título */}
               <span className="eyebrow desc-title">Descrição</span>
               <p className="sub" data-k="sub">
@@ -532,7 +528,9 @@ export function PerolPage() {
 
               <div className="kit-title">
                 <b>Escolha seu kit</b>
-                <span className="pend">preços</span>
+                {kits.some((item) => prices[productId][item.id] === null) && (
+                  <span className="pend">preços</span>
+                )}
               </div>
               <VolumeSelector value={volume} onChange={setVolume} />
               <KitSelector volume={volume} value={kit} productId={productId} onChange={setKit} />
@@ -542,7 +540,15 @@ export function PerolPage() {
                   <span id="kitName">
                     {product.short} · {selectedKit.d}
                   </span>
-                  <b id="totalPrice">{money(prices[productId][kit])}</b>
+                  <span className="total-price">
+                    {off > 0 && (
+                      <span className="was">
+                        <s aria-label={`de ${money(compare!)}`}>{money(compare!)}</s>
+                        <span className="off">-{off}%</span>
+                      </span>
+                    )}
+                    <b id="totalPrice">{money(price)}</b>
+                  </span>
                 </div>
                 <Button className="btn btn-buy" type="button" data-buy="" onClick={() => buy(kit)}>
                   Comprar agora{" "}
@@ -556,7 +562,7 @@ export function PerolPage() {
                       <use href="#i-truck"></use>
                     </svg>
                     <span>
-                      Envio para todo o Brasil <span className="pend">prazo</span>
+                      Envio para todo o Brasil · <b>{SHIPPING.paid.days}</b> com seguro
                     </span>
                   </div>
                   <div>
@@ -570,15 +576,17 @@ export function PerolPage() {
                       <use href="#i-shield"></use>
                     </svg>
                     <span>
-                      Garantia <span className="pend">dias</span>
+                      Garantia de <b>{GUARANTEE_DAYS} dias</b>
                     </span>
                   </div>
                 </div>
                 <div className="pay">
                   Pagamento: <i>PIX</i>
                   <i>CARTÃO</i>
-                  <i>BOLETO</i>
-                  <span className="pend">confirmar meios</span>
+                  <span className="pay-hl">
+                    <b>{PAYMENT.cardNoInterest}x sem juros</b> no cartão
+                  </span>
+                  <span className="pay-note">ou até {PAYMENT.cardMax}x com juros</span>
                 </div>
               </div>
             </div>
@@ -655,50 +663,70 @@ export function PerolPage() {
                 />
               ))}
             </div>
-            <div className="guar rv">
-              <svg className="seal" viewBox="0 0 120 120" aria-hidden="true">
-                <g className="spin-ring">
-                  <path
-                    id="sealPath"
-                    fill="none"
-                    d="M60 60m-46 0a46 46 0 1092 0a46 46 0 10-92 0"
-                  ></path>
-                  <text
-                    style={{ font: "700 9.5px 'IBM Plex Mono',monospace", letterSpacing: "2px" }}
-                    fill="#BFD3FF"
-                  >
-                    <textPath href="#sealPath">COMPRA SEGURA · SATISFAÇÃO GARANTIDA · </textPath>
-                  </text>
-                </g>
-                <circle cx="60" cy="60" r="34" fill="#fff"></circle>
-                <text
-                  x="60"
-                  y="60"
-                  textAnchor="middle"
-                  fill="#13306B"
-                  style={{ font: "900 24px Archivo,sans-serif" }}
+            <InfoDialog
+              eyebrow="Compra segura"
+              title={`Garantia de ${GUARANTEE_DAYS} dias`}
+              lead="Prazo de entrega, frete e garantia antes de você comprar."
+              trigger={
+                <button
+                  type="button"
+                  className="guar rv"
+                  aria-label={`Garantia de ${GUARANTEE_DAYS} dias. Ver prazos, frete e garantia`}
                 >
-                  —
-                </text>
-                <text
-                  x="60"
-                  y="76"
-                  textAnchor="middle"
-                  fill="#13306B"
-                  style={{ font: "700 10px Figtree,sans-serif" }}
-                >
-                  DIAS
-                </text>
-              </svg>
-              <div style={{ display: "grid", gap: "8px" }}>
-                <h3>Garantia de satisfação</h3>
-                <p>
-                  Se o produto não atender o que promete, você recebe seu dinheiro de volta. Prazo e
-                  condições definidos pela operação.
-                </p>
-                <span className="pend">prazo e regras da garantia</span>
-              </div>
-            </div>
+                  <svg className="seal" viewBox="0 0 120 120" aria-hidden="true">
+                    <g className="spin-ring">
+                      <path
+                        id="sealPath"
+                        fill="none"
+                        d="M60 60m-46 0a46 46 0 1092 0a46 46 0 10-92 0"
+                      ></path>
+                      <text
+                        style={{
+                          font: "700 9.5px 'IBM Plex Mono',monospace",
+                          letterSpacing: "2px",
+                        }}
+                        fill="#BFD3FF"
+                      >
+                        <textPath href="#sealPath">
+                          COMPRA SEGURA · SATISFAÇÃO GARANTIDA ·{" "}
+                        </textPath>
+                      </text>
+                    </g>
+                    <circle cx="60" cy="60" r="34" fill="#fff"></circle>
+                    <text
+                      x="60"
+                      y="60"
+                      textAnchor="middle"
+                      fill="#13306B"
+                      style={{ font: "900 24px Archivo,sans-serif" }}
+                    >
+                      {GUARANTEE_DAYS}
+                    </text>
+                    <text
+                      x="60"
+                      y="76"
+                      textAnchor="middle"
+                      fill="#13306B"
+                      style={{ font: "700 10px Figtree,sans-serif" }}
+                    >
+                      DIAS
+                    </text>
+                  </svg>
+                  <span style={{ display: "grid", gap: "8px" }}>
+                    <span className="guar-h">Garantia de satisfação</span>
+                    <span className="guar-p">
+                      Se o produto não atender o que promete, você recebe seu dinheiro de volta em
+                      até {GUARANTEE_DAYS} dias após o recebimento.
+                    </span>
+                    <span className="guar-more">
+                      Ver prazos, frete e garantia <span aria-hidden="true">+</span>
+                    </span>
+                  </span>
+                </button>
+              }
+            >
+              <ShippingInfo />
+            </InfoDialog>
           </div>
         </section>
 
@@ -779,7 +807,21 @@ export function PerolPage() {
                 </div>
               </div>
             </div>
-            <ApplicationsCarousel key={productId} product={product} />
+            <ApplicationsCarousel
+              key={productId}
+              product={product}
+              onChoose={(nextVolume, nextKit) => {
+                setVolume(nextVolume);
+                setKit(nextKit);
+                // espera o popup fechar antes de rolar até a compra
+                window.setTimeout(() => {
+                  document.getElementById("comprar")?.scrollIntoView({
+                    behavior: reducedMotion ? "auto" : "smooth",
+                    block: "start",
+                  });
+                }, 120);
+              }}
+            />
           </div>
         </section>
 
@@ -825,29 +867,15 @@ export function PerolPage() {
         <section className="sec data on-navy" id="dados">
           <div className="wrap">
             <div className="sec-head rv">
-              <span className="eyebrow">Dados de eficácia</span>
-              <h2>Números do laudo, não promessa</h2>
-              <p>
-                Cada número entra a partir do laudo técnico ou da ficha do produto Perol. Enquanto o
-                documento não chega, o campo fica marcado como Pendente.
-              </p>
+              <span className="eyebrow">Ficha técnica</span>
+              <h2>Números da ficha, não promessa</h2>
+              <p>Dados da ficha técnica oficial Perol. Toque em cada item para ver a explicação.</p>
             </div>
             <div className="stats" id="stats">
               <Stats product={product} />
             </div>
             <div className="study" id="study">
-              {product.study.map((study) => (
-                <article className="rv" key={study.h}>
-                  <span className="eyebrow">Estudo</span>
-                  <h3>{study.h}</h3>
-                  <p>{study.p}</p>
-                  <span className="pin">
-                    <Sym name="flask" />
-                    {study.pin}
-                  </span>
-                  <Pending>documento técnico</Pending>
-                </article>
-              ))}
+              <StudyCards product={product} />
             </div>
           </div>
         </section>
@@ -859,26 +887,18 @@ export function PerolPage() {
               <h2>O que dizem os clientes</h2>
             </div>
             <div className="rev-head rv">
-              <span className="big">–,–</span>
+              <span className={`big ${product.rating ? "on" : ""}`}>
+                {product.rating ? product.rating.countLabel : "–,–"}
+              </span>
               <div style={{ display: "grid", gap: "6px", justifyItems: "start" }}>
-                <span className="stars empty">
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                  <svg>
-                    <use href="#i-star"></use>
-                  </svg>
-                </span>
-                <span className="pend">média e total de avaliações reais</span>
+                <Stars score={product.rating?.score} />
+                {product.rating ? (
+                  <span className="rev-count">
+                    avaliações reais {product.rating.verified && <VerifiedBadge size={16} />}
+                  </span>
+                ) : (
+                  <span className="pend">média e total de avaliações reais</span>
+                )}
               </div>
             </div>
             <ReviewFilter items={product.filters} value={filter} onChange={setFilter} />
@@ -922,13 +942,25 @@ export function PerolPage() {
 
       <div className={`sticky-buy ${sticky ? "show" : ""}`} id="stickyBuy" inert={!sticky}>
         <div className="inner">
-          <img id="stickyImg" alt="" src={img(product.gallery[0]!)} />
+          <img id="stickyImg" alt="" src={img(galleryForVolume(product, volume)[0]!)} />
           <div className="t">
             <b id="stickyName">
               {product.short} · {selectedKit.d}
             </b>
             <span id="stickyPrice">
-              {prices[productId][kit] === null ? "Preço a definir" : money(prices[productId][kit])}
+              {price === null ? (
+                "Preço a definir"
+              ) : (
+                <>
+                  {off > 0 && (
+                    <span className="sp-was">
+                      <s>{money(compare!)}</s>
+                      <span className="off">-{off}%</span>
+                    </span>
+                  )}
+                  <strong className="sp-final">{money(price)}</strong>
+                </>
+              )}
             </span>
           </div>
           <Button
