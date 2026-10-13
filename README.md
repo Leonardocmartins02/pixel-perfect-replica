@@ -1,6 +1,8 @@
 # Perol — F5 Flotador e Lavix
 
-Landing page de **F5 Flotador e Lavix Finalizador**, integrada ao Lovable a partir do arquivo `perol-lp-github.zip`. Inclui galeria, seleção de kits, animações, comparadores e FAQ. Prévia para revisão, **sem compra habilitada**.
+Landing page de **F5 Flotador Universal** e **Lavix Finalizador**, da linha profissional Perol. Uma página só, com troca de produto no topo (`/#flotador` e `/#lavix`), galeria por volume (1 L e 5 L), seleção de kits com preço, guia de uso por ambiente, ficha técnica, comparadores de antes e depois e FAQ.
+
+Os preços, prazos, garantia e meios de pagamento já aparecem na página, mas a **compra continua desligada**: sem link de checkout aprovado, o botão "Comprar" só avisa que a compra está indisponível.
 
 ## Stack
 
@@ -22,34 +24,81 @@ bunx tsc --noEmit  # tipos
 ## Organização
 
 ```text
-src/content/flotador.ts          dados: produto, editorial, mídia, oferta, vendedor, FAQ, status
-src/lib/offer.ts                 regras da oferta (liberação, preço por unidade, BRL)
-src/components/perol/            nova página e seções do modelo recebido
-src/components/advertorial/      componentes anteriores preservados
-src/routes/index.tsx             página principal (/)
-src/test/                        testes
-docs/                            briefing e plano
+src/content/flotador.ts                    dados: produtos, kits, preços, frete, pagamento, garantia, FAQ, status
+src/lib/offer.ts                           regras da oferta (liberação, preço por unidade, BRL)
+src/components/perol/PerolPage.tsx         página: estado (produto, volume, kit) e ordem das seções
+src/components/perol/sections.tsx          seções e blocos: kits, dúvidas, ficha técnica, avaliação, popups
+src/components/perol/controls.tsx          seletores (produto, volume, kit), FAQ e navegação dos carrosséis
+src/components/perol/ProductGallery.tsx    galeria do topo
+src/components/perol/ApplicationsCarousel.tsx  "Encontre o seu ambiente" e o guia rápido de cada ambiente
+src/components/advertorial/                componentes anteriores preservados
+src/components/ui/                         shadcn/ui
+src/routes/index.tsx                       página principal (/)
+src/styles.css                             tokens, tema `.perol-page` e estilos da página
+src/test/                                  testes
+public/img/                                fotos (.webp)
+docs/                                      briefing e plano
 ```
+
+## A página, de cima para baixo
+
+1. **Compra** (`#comprar`): galeria, avaliação, descrição, seletor de volume, kits e botão de compra.
+2. **Faixa de provas**: ISO 9001, 13 divisões, validade e uso.
+3. **Dúvidas** (`#duvidas`): cinco objeções, cada uma com foto de cena e resposta.
+4. **Kits** (`#kits-final`): cartões de oferta e a garantia, que abre prazos, frete e pagamento.
+5. **Divisões** (`#quem-usa`), **Onde usar** (`#onde-usar`), **Antes e depois** (`#antes-depois`), **Como funciona** (`#como-funciona`).
+6. **Ficha técnica** (`#dados`), **Avaliações** (`#avaliacoes`) e **FAQ** (`#faq`).
 
 ## Onde editar
 
-- Conteúdo dos dois produtos (`PRODUCTS`), kits (`KITS`), preços (`PRICES`, em centavos) e links (`CHECKOUT`): `src/content/flotador.ts`.
-- Fotos do ZIP: `public/img/`.
+Tudo que é conteúdo fica em `src/content/flotador.ts`:
+
+| O que | Onde |
+| --- | --- |
+| Textos, fotos, dúvidas, ficha técnica e FAQ de cada produto | `PRODUCTS.f5` e `PRODUCTS.lx` |
+| Kits (1 un., 2 un., caixa) | `KITS`; o 5 L é derivado em `kitsForVolume` |
+| Preço de cada kit, em centavos | `PRICES` (1 L) e `PRICES_5L` (5 L) |
+| Preço "de" riscado, que gera o selo de desconto | `COMPARE_PRICES` e `COMPARE_PRICES_5L` |
+| Link de compra de cada kit | `CHECKOUT` e `CHECKOUT_5L` |
+| Prazos de entrega, pagamento e garantia | `SHIPPING`, `PAYMENT` e `GUARANTEE_DAYS` |
+| Fotos da galeria por volume | `gallery` (1 L) e `gallery5` (5 L) de cada produto |
+| Guia rápido de cada ambiente (dose, passos, kit indicado) | `envGuide` de cada produto |
+| Nota, total de avaliações e fotos do rodízio | `rating` de cada produto |
+
+Outros pontos:
+
+- Fotos: `public/img/`, sempre `.webp`, citadas pelo nome sem extensão.
 - Layout, fontes e animações: `src/styles.css` e `src/components/perol/`.
-- Link direto do Lavix: `/#lavix`.
-- Regras de liberação: `src/lib/offer.ts` (`getOfferReadiness`).
+- Regras de liberação da compra: `src/lib/offer.ts` (`getOfferReadiness`).
 
-## Modelo recebido
+### Regras do conteúdo
 
-O visual e os textos vieram do ZIP fornecido pelo proprietário. Fotos de antes/depois, depoimentos, logos de clientes, laudos, valores, condições de entrega, garantia e dados do vendedor continuam pendentes. As fotos do modelo mostram galões de 5 L, enquanto os kits descrevem frascos de 1 L; substituir pelas fotos da apresentação comercial antes de lançar.
-
-A importação não libera vendas: preencher uma URL e um preço não contorna `getOfferReadiness`. A configuração de aprovação e apresentação comercial deve ser revisada por produto antes da ativação dos kits.
+- Preço é inteiro em centavos (`3990` = R$ 39,90). `null` aparece como "R$ ––,––" e marca o bloco como Pendente.
+- O desconto é calculado: só aparece quando existe preço "de" maior que o preço do kit.
+- No 5 L não existe caixa com 6. O kit maior é a caixa com 2 galões; quem estava na caixa de 1 L e troca para 5 L cai nela.
+- Dado que falta fica `null` ou sem o campo e aparece como "Pendente". Não preencher com valor inventado.
+- Um ambiente sem `envGuide` continua no carrossel, só não abre o guia.
 
 ## Estado atual
 
-- Status `draft`; aprovação comercial desativada; todos os dados comerciais `null`.
-- Prévia com `noindex` e `robots.txt` bloqueando tudo (não é controle de acesso).
-- Sem checkout, pagamento, frete, WhatsApp, analytics ou coleta de dados.
+Preenchido:
+
+- Preços dos kits de 1 L e 5 L dos dois produtos, com preço "de" nos kits com desconto.
+- Frete (3 a 8 dias com seguro, 5 a 15 dias grátis), garantia de 7 dias e pagamento (PIX e cartão, 3x sem juros, até 12x).
+- Ficha técnica (diluições, pH, superfícies, embalagens, validade) e guia de uso por ambiente.
+- Galerias de 1 L e 5 L do F5 e do galão do Lavix, fotos de cena das dúvidas e pares de antes e depois (marcados como comparação ilustrativa).
+- Avaliação no topo ("+8 mil avaliações verificadas") com fotos de clientes.
+
+Pendente:
+
+- **Links de checkout**: todos `null`. Com link e preço, a compra ainda depende de `status: "approved"`, aprovação comercial, SKU, volume e unidades por caixa (`getOfferReadiness`).
+- Vendedor, CNPJ e canal de atendimento no rodapé.
+- Depoimentos: os três cartões seguem como espaço reservado.
+- Dados de laudo citados nas dúvidas e no FAQ: % de remoção e rendimento por litro do F5, dose por kg e tempo de fixação do Lavix.
+- Preço da caixa de 5 L com 6 unidades não existe; os campos `cx6` de `PRICES_5L` ficam `null`.
+- A faixa do topo ainda diz "Modelo de referência"; remover antes de publicar.
+
+Antes de publicar, confirmar com o parceiro a origem do total de avaliações e das fotos de clientes, e os prazos e condições comerciais. A prévia segue com `noindex` e `robots.txt` bloqueando tudo (isso não é controle de acesso). Não há checkout, pixel, analytics, WhatsApp nem coleta de dados.
 
 ## Continuidade local
 
@@ -57,7 +106,7 @@ Após o proprietário conectar o GitHub (Lovable → + → GitHub), clone o repo
 
 ## Componentes e tema
 
-O shadcn/ui já está configurado em `components.json`, com os componentes no próprio repositório em `src/components/ui/`. A página usa `Button` nas ações e miniaturas, `ToggleGroup` nos produtos e filtros, `RadioGroup` nos kits, `Accordion` no FAQ e `Slider` nos comparadores. Os componentes podem ser personalizados sem clonar o repositório completo do shadcn.
+O shadcn/ui já está configurado em `components.json`, com os componentes no próprio repositório em `src/components/ui/`. A página usa `Button` nas ações e miniaturas, `ToggleGroup` nos produtos, volumes e filtros, `RadioGroup` nos kits, `Carousel` na galeria e nos ambientes, `Accordion` no FAQ, `Slider` nos comparadores, `Popover` nos passos de "Como funciona" e `Dialog` nos popups (garantia, ficha técnica e guia por ambiente, todos pelo `InfoDialog` de `sections.tsx`). Os componentes podem ser personalizados sem clonar o repositório completo do shadcn.
 
 O tema `.perol-page` mapeia a paleta recebida para os tokens semânticos do shadcn (`primary`, `background`, `muted`, `border`, `ring`). A troca para Lavix atualiza a cor de destaque. O token de texto da referência foi renomeado para `--perol-muted`, evitando conflito com a superfície `--muted` do shadcn. Os controles têm foco visível e suporte a teclado.
 
