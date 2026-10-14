@@ -30,7 +30,8 @@ describe("Palco das objeções", () => {
     for (const objection of PRODUCTS[id].obj) {
       expect(objection.stage.title).not.toBe("");
       expect(objection.stage.items.length).toBeGreaterThan(0);
-      expect(objection.stage.img).toMatch(new RegExp(`^${id === "lx" ? "lx" : "f5"}-`));
+      // a foto da entrega é a mesma nos dois produtos
+      expect(objection.stage.img).toMatch(new RegExp(`^(${id}-|entrega-caminhao$)`));
     }
   });
 
@@ -55,13 +56,13 @@ describe("Palco das objeções", () => {
     }
   });
 
-  it("o que falta aparece como 'Pendente' no cartão, sem número inventado", () => {
+  it("o fato de apoio de cada dúvida aparece como selo no cartão", () => {
     mockStacked(false);
     render(<PerolPage />);
-    for (const objection of PRODUCTS.f5.obj.filter((o) => o.pend)) {
-      expect(within(secao()).getByText(objection.pend!)).toHaveClass("pend");
+    for (const objection of PRODUCTS.f5.obj.filter((o) => o.fact)) {
+      expect(within(secao()).getByText(objection.fact!).closest(".fact")).not.toBeNull();
     }
-    expect(secao().textContent).not.toMatch(/R\$|\d+\s?%/);
+    expect(secao().textContent).not.toMatch(/\d+\s?%/);
   });
 
   it("trocar para Lavix troca o conteúdo do palco", () => {
