@@ -639,7 +639,6 @@ export function Reviews({ product }: { product: ProductContent }) {
               </span>
             </div>
           </div>
-          <Pending>Nome ilustrativo</Pending>
         </article>
       ))}
     </>
