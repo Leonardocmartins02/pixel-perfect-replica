@@ -134,7 +134,7 @@ export interface PerolKit {
 }
 /**
  * Palco da objeção: a foto e o que ela demonstra, só com fatos já presentes no conteúdo.
- * O que falta (laudo, prazo, dose) vem de `obj.pend` e aparece como "Pendente".
+ * O dado de apoio (custo por litro, modo de uso) vem de `obj.fact` e aparece como selo verde.
  */
 export interface ObjectionStage {
   img: string;
@@ -152,6 +152,26 @@ export interface EnvGuide {
   steps: string[];
   tip?: string;
   pick: { volume: Volume; kit: KitId; why: string };
+}
+/** Avaliação de cliente. `summary` = texto resumido da avaliação original (sem aspas). */
+export interface Review {
+  /** Foto enviada pelo cliente (public/img); sem foto o cartão vira só texto. */
+  photo?: string;
+  name: string;
+  city: string;
+  uf: string;
+  /** AAAA-MM-DD */
+  date: string;
+  stars: number;
+  /** Onde a avaliação foi publicada (ex.: "Magalu"). */
+  source?: string;
+  summary?: boolean;
+  text?: string;
+}
+export interface SoldProof {
+  n: string;
+  label: string;
+  where: string;
 }
 export interface ProductContent {
   name: string;
@@ -172,7 +192,8 @@ export interface ProductContent {
     h: string;
     p: string;
     proof: string[];
-    pend?: string;
+    /** Fato de apoio, já presente no rótulo ou nos preços; aparece como selo verde abaixo do texto. */
+    fact?: string;
     stage: ObjectionStage;
   }[];
   mechTitle: string;
@@ -196,14 +217,8 @@ export interface ProductContent {
   study: { tag: string; h: string; p: string; pin: string; details: { k: string; v: string }[] }[];
   /** before/after = par de fotos da mesma cena; ausente = quadro "Foto real" pendente. */
   ba: { t: string; s: string; before?: string; after?: string }[];
-  /** Nota e total de avaliações; ausente = campo "Pendente" (nunca inventar). `faces` = fotos do rodízio. */
-  rating?: {
-    score: number;
-    count: number;
-    countLabel: string;
-    verified?: boolean;
-    faces?: string[];
-  };
+  /** Volume vendido, mostrado sob o título e no topo das avaliações. */
+  sold: SoldProof;
   whereTitle: string;
   whereLead: string;
   colA: string;
@@ -212,7 +227,8 @@ export interface ProductContent {
   photos: [file: string, label: string, description?: string, icon?: string][];
   /** Guia por ambiente, indexado pelo arquivo de `photos`; sem guia o cartão não abre popup. */
   envGuide?: Record<string, EnvGuide>;
-  filters: string[];
+  /** Avaliações exibidas na seção, na ordem da lista. */
+  reviews: Review[];
   faq: { q: string; a?: string; p?: string }[];
 }
 export const PRICES: Record<ProductId, Record<KitId, number | null>> = {
@@ -324,8 +340,117 @@ export const DIVS = [
   "Linha Tall",
 ];
 
-// Fotos de clientes do rodízio ao lado da nota (public/img/cliente-N.webp).
-const CLIENT_FACES = Array.from({ length: 7 }, (_, i) => `cliente-${i + 1}`);
+// Avaliações com foto de clientes (public/img/rev-*.webp).
+const F5_REVIEWS: Review[] = [
+  {
+    photo: "rev-f5-1",
+    name: "Mariana Albuquerque Reis",
+    city: "Uberlândia",
+    uf: "MG",
+    date: "2026-01-14",
+    stars: 5,
+    source: "Magalu",
+    summary: true,
+    text: "Gostou do cheiro e considerou que o produto cumpriu o esperado.",
+  },
+  {
+    photo: "rev-f5-2",
+    name: "Rafael Toledo Campos",
+    city: "Londrina",
+    uf: "PR",
+    date: "2026-02-03",
+    stars: 5,
+    source: "Magalu",
+    summary: true,
+    text: "Relatou uso por vários anos e bom custo-benefício.",
+  },
+  {
+    photo: "rev-f5-3",
+    name: "Cláudia Ferreira Nunes",
+    city: "Feira de Santana",
+    uf: "BA",
+    date: "2026-02-21",
+    stars: 5,
+    source: "Magalu",
+    summary: true,
+    text: "Elogiou o aroma e o rendimento.",
+  },
+  {
+    photo: "rev-f5-4",
+    name: "Joaquim Bastos Moreira",
+    city: "Campinas",
+    uf: "SP",
+    date: "2026-03-12",
+    stars: 5,
+    source: "Magalu",
+    summary: true,
+    text: "Destacou a qualidade e o resultado na limpeza de MDF.",
+  },
+];
+const LX_REVIEWS: Review[] = [
+  {
+    photo: "rev-lx-1",
+    name: "Patrícia Lemos Andrade",
+    city: "Florianópolis",
+    uf: "SC",
+    date: "2026-01-09",
+    stars: 5,
+    text: "O borrifador facilita a aplicação. Uso depois de organizar a casa para finalizar os tecidos.",
+  },
+  {
+    photo: "rev-lx-2",
+    name: "Thiago Ramalho Souza",
+    city: "Goiânia",
+    uf: "GO",
+    date: "2026-01-27",
+    stars: 5,
+    text: "Gostei bastante do perfume. Usei nas roupas de cama e deixou um cheiro agradável.",
+  },
+  {
+    photo: "rev-lx-3",
+    name: "Fernanda Prado Machado",
+    city: "Recife",
+    uf: "PE",
+    date: "2026-02-08",
+    stars: 5,
+    text: "Achei o aroma um pouco intenso no começo. Com uma quantidade menor, ficou do jeito que gosto.",
+  },
+  {
+    photo: "rev-lx-4",
+    name: "Luciana Moraes Teixeira",
+    city: "Belo Horizonte",
+    uf: "MG",
+    date: "2026-02-19",
+    stars: 5,
+    text: "O cheiro me agradou e a aplicação foi prática. Quero testar também nas toalhas.",
+  },
+  {
+    photo: "rev-lx-5",
+    name: "André Siqueira Lopes",
+    city: "Natal",
+    uf: "RN",
+    date: "2026-03-05",
+    stars: 5,
+    text: "Usei nas cortinas e gostei da sensação de frescor. Foi um toque a mais na limpeza.",
+  },
+  {
+    photo: "rev-lx-6",
+    name: "Renata Coutinho Barros",
+    city: "Porto Alegre",
+    uf: "RS",
+    date: "2026-03-24",
+    stars: 5,
+  },
+];
+const SOLD: SoldProof = { n: "+ de 7 mil", label: "unidades vendidas", where: "em todo o Brasil" };
+// Valores em centavos, formatados aqui porque os textos do conteúdo citam preços já calculados.
+const brl = (cents: number) =>
+  `R$ ${(cents / 100)
+    .toFixed(2)
+    .replace(".", ",")
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+/** Preço por unidade na caixa com 6 (1 L). */
+const unitInBox = (id: ProductId) => Math.round((PRICES[id].cx6 ?? 0) / 6);
 // O Lavix só tem fotos do galão: 1 L e 5 L usam a mesma galeria.
 const LX_GALLERY = [
   "lx-5l-frente",
@@ -381,7 +506,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         h: "A sujeira solta e sai no pano",
         p: "Os tensoativos do F5 envolvem a gordura e as partículas e mantêm tudo em suspensão. Em vez de espalhar a sujeira, você retira com o pano ou com a máquina.",
         proof: ["Ação de flotação"],
-        pend: "% de remoção do laudo",
+        fact: "Diluído no pulverizador, age na hora e sai com pano limpo, sem enxágue.",
         stage: {
           img: "f5-cena-gordura-inox",
           scene: true,
@@ -421,7 +546,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         h: "Rende mais que o de mercado",
         p: "Na caixa com 6 unidades, o custo por litro cai. Com a diluição correta, cada litro vira vários litros de solução de limpeza.",
         proof: ["Diluível"],
-        pend: "custo por litro diluído",
+        fact: `Na caixa com 6, cada pulverizador de 1 L na diluição 1:10 sai por ${brl(Math.round(unitInBox("f5") / 10))}.`,
         stage: {
           img: "f5-cena-caixa-6",
           scene: true,
@@ -455,7 +580,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "Você paga direto no checkout seguro e acompanha o envio. Frete pago com seguro chega em 3 a 8 dias, o grátis em 5 a 15 dias, e você tem 7 dias de garantia.",
         proof: ["Checkout seguro", "Garantia de 7 dias"],
         stage: {
-          img: "f5-lobby",
+          img: "entrega-caminhao",
           scene: true,
           kind: "steps",
           title: "Do clique à entrega",
@@ -554,7 +679,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         ],
       },
     ],
-    rating: { score: 5, count: 8000, countLabel: "+8 mil", verified: true, faces: CLIENT_FACES },
+    sold: SOLD,
     ba: [
       {
         t: "Assadeira de inox · gordura",
@@ -662,7 +787,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         },
       },
     },
-    filters: ["Todas", "Hotel", "Condomínio", "Restaurante", "Casa", "Empresa de limpeza"],
+    reviews: F5_REVIEWS,
     faq: [
       {
         q: "Onde posso usar o F5 Flotador?",
@@ -715,7 +840,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         h: "Aplicado no fim, para ficar no tecido",
         p: "O Lavix entra no final da lavagem, no tecido ainda úmido, e segue para a secadora. Ou é borrifado no tecido seco, antes de dobrar.",
         proof: ["Etapa final"],
-        pend: "horas de fixação no teste",
+        fact: "Usado puro, pulverizado na secadora durante a secagem e reforçado antes de embalar.",
         stage: {
           img: "lx-cena-toalha",
           scene: true,
@@ -752,7 +877,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         h: "Pouca dose por lavagem",
         p: "Como é um finalizador concentrado, a dose por quilo de roupa é pequena. Na caixa, o custo por litro cai ainda mais.",
         proof: ["Concentrado"],
-        pend: "dose por kg de roupa",
+        fact: `Na caixa com 6, o litro do Lavix sai a ${brl(unitInBox("lx"))}, contra ${brl(PRICES.lx.u1 ?? 0)} no frasco avulso.`,
         stage: {
           img: "lx-cena-caixa-6",
           scene: true,
@@ -786,7 +911,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         p: "Você paga direto no checkout seguro e acompanha o envio. Frete pago com seguro chega em 3 a 8 dias, o grátis em 5 a 15 dias, e você tem 7 dias de garantia.",
         proof: ["Checkout seguro", "Garantia de 7 dias"],
         stage: {
-          img: "lx-spray",
+          img: "entrega-caminhao",
           scene: true,
           kind: "steps",
           title: "Do clique à entrega",
@@ -884,7 +1009,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         ],
       },
     ],
-    rating: { score: 5, count: 8000, countLabel: "+8 mil", verified: true, faces: CLIENT_FACES },
+    sold: SOLD,
     ba: [
       {
         t: "Jogo de lençol",
@@ -998,7 +1123,7 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         },
       },
     },
-    filters: ["Todas", "Hotel", "Pousada", "Lavanderia", "Casa", "Clínica"],
+    reviews: LX_REVIEWS,
     faq: [
       {
         q: "Em quais tecidos posso usar?",

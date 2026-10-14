@@ -29,9 +29,8 @@ import {
   StudyCards,
   Comparison,
   Reviews,
-  RatingProof,
-  Stars,
-  VerifiedBadge,
+  SoldProof,
+  PlusIcon,
   InfoDialog,
   ShippingInfo,
 } from "./sections";
@@ -39,7 +38,17 @@ import { Button } from "@/components/ui/button";
 import { ApplicationsCarousel } from "./ApplicationsCarousel";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { ProductGallery } from "./ProductGallery";
-import { ProductSelector, VolumeSelector, KitSelector, ProductFaq, ReviewFilter } from "./controls";
+import { ProductSelector, VolumeSelector, KitSelector, ProductFaq } from "./controls";
+
+// Blocos que ganham a entrada no scroll (`.rv`) além dos que já têm a classe no JSX.
+const REVEAL_EXTRA = [
+  ".pb",
+  ".obj-list .oc",
+  ".offer-cards > *",
+  ".division-list > li",
+  ".icons > *",
+  ".professional-count",
+].join(", ");
 
 export function PerolPage() {
   const reducedMotion = useReducedMotion();
@@ -49,7 +58,6 @@ export function PerolPage() {
   const prices = pricesForVolume(volume);
   const checkout = checkoutForVolume(volume);
   const [kit, setKit] = useState<KitId>("cx6");
-  const [filter, setFilter] = useState("Todas");
   const [toast, setToast] = useState("");
   const [sticky, setSticky] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -64,7 +72,6 @@ export function PerolPage() {
   const off = discountPct(price, compare);
   const selectProduct = (id: ProductId) => {
     setProductId(id);
-    setFilter("Todas");
     setToast("");
     history.replaceState(history.state, "", id === "lx" ? "#lavix" : "#flotador");
     window.scrollTo({
@@ -93,7 +100,6 @@ export function PerolPage() {
       const hash = window.location.hash;
       if (!["#lavix", "#lx", "#flotador", "#f5", ""].includes(hash)) return;
       setProductId(["#lavix", "#lx"].includes(hash) ? "lx" : "f5");
-      setFilter("Todas");
     };
     sync();
     window.addEventListener("hashchange", sync);
@@ -123,6 +129,15 @@ export function PerolPage() {
     resize.observe(page);
     window.addEventListener("scroll", position, { passive: true });
     window.addEventListener("resize", position);
+    // cartões e listas entram com o mesmo movimento das seções, um após o outro
+    page.querySelectorAll(REVEAL_EXTRA).forEach((el) => el.classList.add("rv"));
+    page.querySelectorAll<HTMLElement>(".rv").forEach((el) => {
+      const siblings = el.parentElement
+        ? Array.from(el.parentElement.children).filter((child) => child.classList.contains("rv"))
+        : [];
+      const index = Math.max(0, siblings.indexOf(el));
+      el.style.setProperty("--rv-delay", `${(index % 6) * 90}ms`);
+    });
     const elements = page.querySelectorAll<HTMLElement>(".rv, .ico, .stat");
     let observer: IntersectionObserver | undefined;
     if ("IntersectionObserver" in window && !reducedMotion) {
@@ -153,7 +168,7 @@ export function PerolPage() {
       window.removeEventListener("scroll", position);
       window.removeEventListener("resize", position);
     };
-  }, [productId, filter, reducedMotion]);
+  }, [productId, reducedMotion]);
 
   return (
     <div className="perol-page" data-prod={productId} ref={pageRef}>
@@ -453,7 +468,7 @@ export function PerolPage() {
                 <span data-k="h1a">{product.h1a}</span>
                 <em data-k="h1b">{product.h1b}</em>
               </h1>
-              <RatingProof rating={product.rating} />
+              <SoldProof sold={product.sold} />
               {/* rótulo só no mobile, onde a descrição desce para o fim da coluna e perde o título */}
               <span className="eyebrow desc-title">Descrição</span>
               <p className="sub" data-k="sub">
@@ -468,7 +483,7 @@ export function PerolPage() {
                 ))}
               </ul>
               <div className="badges">
-                <div className="bdg">
+                <div className="bdg bdg-iso">
                   <svg viewBox="0 0 48 48">
                     <g className="spin-ring">
                       <circle
@@ -487,7 +502,7 @@ export function PerolPage() {
                       y="22.5"
                       textAnchor="middle"
                       fill="#fff"
-                      style={{ font: "800 7px Figtree,sans-serif" }}
+                      style={{ font: "800 7px Montserrat,sans-serif" }}
                     >
                       ISO
                     </text>
@@ -496,14 +511,14 @@ export function PerolPage() {
                       y="31"
                       textAnchor="middle"
                       fill="#fff"
-                      style={{ font: "800 8px Figtree,sans-serif" }}
+                      style={{ font: "800 8px Montserrat,sans-serif" }}
                     >
                       9001
                     </text>
                   </svg>
                   <div>
-                    <b>Fábrica certificada</b>
-                    <span>Gestão de qualidade</span>
+                    <b>ISO 9001</b>
+                    <span>Fábrica certificada em gestão de qualidade</span>
                   </div>
                 </div>
                 <div className="bdg">
@@ -682,8 +697,8 @@ export function PerolPage() {
                       ></path>
                       <text
                         style={{
-                          font: "700 9.5px 'IBM Plex Mono',monospace",
-                          letterSpacing: "2px",
+                          font: "700 8.5px Montserrat,sans-serif",
+                          letterSpacing: "1.3px",
                         }}
                         fill="#BFD3FF"
                       >
@@ -698,7 +713,7 @@ export function PerolPage() {
                       y="60"
                       textAnchor="middle"
                       fill="#13306B"
-                      style={{ font: "900 24px Archivo,sans-serif" }}
+                      style={{ font: "800 21px Montserrat,sans-serif" }}
                     >
                       {GUARANTEE_DAYS}
                     </text>
@@ -707,7 +722,7 @@ export function PerolPage() {
                       y="76"
                       textAnchor="middle"
                       fill="#13306B"
-                      style={{ font: "700 10px Figtree,sans-serif" }}
+                      style={{ font: "700 10px Montserrat,sans-serif" }}
                     >
                       DIAS
                     </text>
@@ -719,7 +734,10 @@ export function PerolPage() {
                       até {GUARANTEE_DAYS} dias após o recebimento.
                     </span>
                     <span className="guar-more">
-                      Ver prazos, frete e garantia <span aria-hidden="true">+</span>
+                      Ver prazos, frete e garantia{" "}
+                      <span aria-hidden="true">
+                        <PlusIcon />
+                      </span>
                     </span>
                   </span>
                 </button>
@@ -882,28 +900,16 @@ export function PerolPage() {
 
         <section className="sec" id="avaliacoes">
           <div className="wrap">
-            <div className="sec-head rv">
+            <div className="sec-head rv sold-head">
               <span className="eyebrow">Avaliações</span>
-              <h2>O que dizem os clientes</h2>
+              <h2>
+                <span className="sold-n">{product.sold.n}</span> {product.sold.label}{" "}
+                {product.sold.where}
+              </h2>
+              <p>Veja algumas avaliações de quem já comprou.</p>
             </div>
-            <div className="rev-head rv">
-              <span className={`big ${product.rating ? "on" : ""}`}>
-                {product.rating ? product.rating.countLabel : "–,–"}
-              </span>
-              <div style={{ display: "grid", gap: "6px", justifyItems: "start" }}>
-                <Stars score={product.rating?.score} />
-                {product.rating ? (
-                  <span className="rev-count">
-                    avaliações reais {product.rating.verified && <VerifiedBadge size={16} />}
-                  </span>
-                ) : (
-                  <span className="pend">média e total de avaliações reais</span>
-                )}
-              </div>
-            </div>
-            <ReviewFilter items={product.filters} value={filter} onChange={setFilter} />
             <div className="reviews" id="reviews">
-              <Reviews product={product} filter={filter} />
+              <Reviews product={product} />
             </div>
           </div>
         </section>

@@ -57,7 +57,7 @@ export function mechanismSvg(p: ProductContent, cur: ProductId) {
         return `<g class="particle" style="animation-delay:${d}s"><circle cx="${x}" cy="246" r="9" fill="#8A6A3A"/><circle cx="${x + 6}" cy="243" r="4" fill="#A9864F"/></g><g class="mic" style="animation-delay:${d}s">${arms}</g>`;
       })
       .join("");
-    body += `<g class="wipe"><rect x="0" y="120" width="120" height="44" rx="10" fill="#fff" opacity=".92"/><text x="60" y="147" text-anchor="middle" fill="#13306B" style="font:800 13px Figtree,sans-serif">${L[3].toUpperCase()}</text></g>`;
+    body += `<g class="wipe"><rect x="0" y="120" width="120" height="44" rx="10" fill="#fff" opacity=".92"/><text x="60" y="147" text-anchor="middle" fill="#13306B" style="font:800 13px Montserrat,sans-serif">${L[3].toUpperCase()}</text></g>`;
   } else {
     body += `<rect x="0" y="228" width="560" height="102" fill="#1E3A78"/>${Array.from({ length: 14 }, (_, i) => `<path d="M0 ${236 + i * 7} Q140 ${229 + i * 7} 280 ${236 + i * 7} T560 ${236 + i * 7}" fill="none" stroke="#2C4B8E" stroke-width="2"/>`).join("")}`;
     body += xs
@@ -71,7 +71,7 @@ export function mechanismSvg(p: ProductContent, cur: ProductId) {
     <rect width="560" height="330" fill="#0B1F4A"/>
     ${Array.from({ length: 18 }, (_, i) => `<circle cx="${(i * 37 + 12) % 560}" cy="${30 + ((i * 53) % 150)}" r="${1 + (i % 3)}" fill="#fff" opacity=".12"/>`).join("")}
     ${body}
-    <g style="font:600 11px 'IBM Plex Mono',monospace;letter-spacing:1px" fill="#BFD3FF">
+    <g style="font:600 11px Montserrat,sans-serif;letter-spacing:1px" fill="#BFD3FF">
       <text x="16" y="318">${L[0].toUpperCase()}</text>
       <text x="16" y="28"><tspan fill="${acc}">●</tspan> ${L[2].toUpperCase()}</text>
       ${cur === "f5" ? `<text x="544" y="28" text-anchor="end"><tspan fill="#A9864F">●</tspan> ${L[1].toUpperCase()}</text>` : `<text x="544" y="28" text-anchor="end">${L[1].toUpperCase()} ≈</text>`}

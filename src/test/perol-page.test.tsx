@@ -220,18 +220,12 @@ describe("Página importada do modelo Perol", () => {
     for (const image of container.querySelectorAll("img"))
       expect(image.getAttribute("src")).toMatch(/^\/img\/.+\.webp$/);
   });
-  it("mantém no DOM a ordem título, nota, descrição, checks (o mobile reordena só por CSS)", () => {
+  it("mantém no DOM a ordem título, vendidos, descrição, checks (o mobile reordena só por CSS)", () => {
     const { container } = render(<PerolPage />);
     const kids = [...container.querySelector("#comprar .info")!.children].map(
       (el) => el.className || el.tagName,
     );
-    expect(kids.slice(0, 5)).toEqual([
-      "H1",
-      "rating-row rating-proof",
-      "eyebrow desc-title",
-      "sub",
-      "ticks",
-    ]);
+    expect(kids.slice(0, 5)).toEqual(["H1", "sold-proof", "eyebrow desc-title", "sub", "ticks"]);
   });
   it("cada passo do mecanismo abre um popup com o detalhe ao clicar", async () => {
     const user = userEvent.setup();
@@ -241,31 +235,21 @@ describe("Página importada do modelo Perol", () => {
     await user.click(passo);
     expect(await screen.findByText(/lado que se liga à gordura/)).toBeInTheDocument();
   });
-  it("mostra a avaliação do conteúdo: rostos, estrelas, total e selo de verificado", () => {
+  it("mostra o volume vendido no topo e no título das avaliações", () => {
     const { container } = render(<PerolPage />);
-    const row = container.querySelector(".rating-row")!;
-    expect(row).toHaveTextContent("+8 mil");
-    expect(row).toHaveTextContent("avaliações verificadas");
-    expect(row.querySelectorAll(".rp-face")).toHaveLength(3);
-    expect(row.querySelectorAll(".rp-face img[data-on]")).toHaveLength(3);
-    expect(
-      within(row as HTMLElement).getByRole("img", { name: "Avaliações verificadas" }),
-    ).toBeInTheDocument();
-    expect(row.querySelector(".pend")).toBeNull();
-    expect(container.querySelector(".rev-head .big")).toHaveTextContent("+8 mil");
+    const sold = PRODUCTS.f5.sold;
+    expect(container.querySelector(".sold-proof")).toHaveTextContent(`${sold.n} ${sold.label}`);
+    expect(container.querySelector("#avaliacoes h2")).toHaveTextContent(
+      `${sold.n} ${sold.label} ${sold.where}`,
+    );
   });
-  it("sem dado de avaliação, mostra o campo Pendente e não inventa nota", () => {
-    const rating = PRODUCTS.f5.rating!;
-    delete PRODUCTS.f5.rating;
-    try {
-      const { container } = render(<PerolPage />);
-      const row = container.querySelector(".rating-row")!;
-      expect(row).toHaveTextContent("–,–");
-      expect(row.querySelector(".pend")).toBeInTheDocument();
-      expect(container.querySelector(".rev-head .big")).toHaveTextContent("–,–");
-      expect(container.querySelector(".rev-head .pend")).toBeInTheDocument();
-    } finally {
-      PRODUCTS.f5.rating = rating;
-    }
+  it("lista todas as avaliações com foto, sem filtro por segmento", () => {
+    const { container } = render(<PerolPage />);
+    const section = container.querySelector("#avaliacoes")!;
+    expect(section.querySelector("#filters")).toBeNull();
+    expect(section).toHaveTextContent("Veja algumas avaliações");
+    const cards = section.querySelectorAll(".rev");
+    expect(cards).toHaveLength(PRODUCTS.f5.reviews.length);
+    for (const card of cards) expect(card.querySelector(".rev-photo img")).not.toBeNull();
   });
 });

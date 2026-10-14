@@ -184,32 +184,3 @@ export function ProductFaq({ product }: { product: ProductContent }) {
     </Accordion>
   );
 }
-
-export function ReviewFilter({
-  items,
-  value,
-  onChange,
-}: {
-  items: string[];
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <ToggleGroup
-      type="single"
-      className="filters"
-      id="filters"
-      aria-label="Filtrar avaliações por segmento"
-      value={value}
-      onValueChange={(next) => {
-        if (next) onChange(next);
-      }}
-    >
-      {items.map((label) => (
-        <ToggleGroupItem key={label} value={label}>
-          {label}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
-  );
-}

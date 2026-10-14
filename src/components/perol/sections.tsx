@@ -11,6 +11,7 @@ import {
   type PerolKit,
   type ProductContent,
   type ProductId,
+  type SoldProof as SoldProofData,
 } from "@/content/flotador";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,40 +37,20 @@ export function Sym({ name }: { name: string }) {
 export function Pending({ children }: { children: ReactNode }) {
   return <span className="pend">{children}</span>;
 }
-/** Selo azul de "verificado" (as cores são as do selo, por isso ficam no próprio SVG). */
-export function VerifiedBadge({
-  size = 18,
-  label = "Avaliações verificadas",
-}: {
-  size?: number;
-  label?: string;
-}) {
-  const petals = Array.from({ length: 8 }, (_, i) => {
-    const angle = (i * Math.PI) / 4;
-    return { cx: 12 + Math.cos(angle) * 6.2, cy: 12 + Math.sin(angle) * 6.2 };
-  });
+/** Selo verde com um fato de apoio já confirmado (rótulo, ficha ou preço). */
+export function Fact({ children }: { children: ReactNode }) {
   return (
-    <svg
-      className="verified"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
-    >
-      <g fill="#0095F6">
-        <circle cx="12" cy="12" r="7.6" />
-        {petals.map((petal, i) => (
-          <circle key={i} cx={petal.cx} cy={petal.cy} r="4.1" />
-        ))}
-      </g>
-      <path
-        d="M7.9 12.3l2.7 2.7 5.5-5.6"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <span className="fact">
+      <Sym name="check" />
+      <span>{children}</span>
+    </span>
+  );
+}
+/** "+" desenhado em SVG, para ficar centralizado no círculo em qualquer fonte. */
+export function PlusIcon() {
+  return (
+    <svg className="plus-ico" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 5.5v13M5.5 12h13" />
     </svg>
   );
 }
@@ -91,72 +72,47 @@ export function Stars({
     </span>
   );
 }
-const FACE_SWAP_MS = 4000;
-/** Três rostos sobrepostos; a cada 4 s um deles troca por outra foto da lista (fade no CSS). */
-function FaceStack({ faces, verified }: { faces: string[]; verified: boolean }) {
-  const slots = Math.min(3, faces.length);
-  const [shown, setShown] = useState(() => Array.from({ length: slots }, (_, i) => i));
-  const slot = useRef(0);
-  const next = useRef(slots);
-  useEffect(() => {
-    if (faces.length <= slots) return;
-    const timer = window.setInterval(() => {
-      const target = slot.current % slots;
-      const face = next.current % faces.length;
-      slot.current += 1;
-      next.current += 1;
-      setShown((current) => current.map((value, i) => (i === target ? face : value)));
-    }, FACE_SWAP_MS);
-    return () => window.clearInterval(timer);
-  }, [faces.length, slots]);
+/** Volume vendido com o caminhão animado (o movimento para com redução de movimento, no CSS). */
+export function SoldProof({ sold }: { sold: SoldProofData }) {
   return (
-    <span className="rp-stack">
-      {shown.map((active, position) => (
-        <span className="rp-face" key={position}>
-          {faces.map((face, i) => (
-            <img
-              key={face}
-              src={img(face)}
-              alt=""
-              width={40}
-              height={40}
-              loading={i < slots ? "eager" : "lazy"}
-              data-on={i === active ? "" : undefined}
+    <div className="sold-proof">
+      <span className="sold-ico" aria-hidden="true">
+        <svg viewBox="0 0 76 48">
+          <path className="sold-road" d="M2 43h72" />
+          <g className="sold-speed">
+            <path d="M3 17h7" />
+            <path d="M1 23h9" />
+            <path d="M4 29h6" />
+          </g>
+          <g className="sold-truck">
+            <rect className="sold-box" x="13" y="11" width="31" height="23" rx="3" />
+            <path className="sold-check" d="M22 22.5l4 4 8-8" />
+            <path
+              className="sold-cab"
+              d="M44 17h10.5a3 3 0 0 1 2.4 1.2l5.4 7.2a3 3 0 0 1 .7 1.9V34H44z"
             />
-          ))}
-        </span>
-      ))}
-      {verified && (
-        <span className="rp-badge">
-          <VerifiedBadge size={18} />
-        </span>
-      )}
-    </span>
-  );
-}
-/** Avaliação abaixo do título: rostos, estrelas e total; sem dado, o campo fica "Pendente". */
-export function RatingProof({ rating }: { rating: ProductContent["rating"] }) {
-  if (!rating)
-    return (
-      <div className="rating-row">
-        <Stars />
-        <b className="rating-n">–,–</b>
-        <span className="rating-txt">avaliações reais</span>
-        <span className="pend">nota e nº de avaliações</span>
-      </div>
-    );
-  return (
-    <div className="rating-row rating-proof">
-      {rating.faces && rating.faces.length > 0 && (
-        <FaceStack faces={rating.faces} verified={!!rating.verified} />
-      )}
-      <span className="rp-text">
-        <Stars score={rating.score} />
-        <span className="rp-line">
-          <b className="rating-n">{rating.countLabel}</b>
-          <span className="rating-txt">avaliações verificadas</span>
-          {rating.verified && !rating.faces?.length && <VerifiedBadge size={15} />}
-        </span>
+            <path className="sold-win" d="M47 20h7l4 5.5H47z" />
+            <g className="sold-wheel" style={{ transformOrigin: "23px 36px" }}>
+              <circle cx="23" cy="36" r="5" />
+              <path d="M23 32.5v7M19.5 36h7" />
+            </g>
+            <g className="sold-wheel" style={{ transformOrigin: "53px 36px" }}>
+              <circle cx="53" cy="36" r="5" />
+              <path d="M53 32.5v7M49.5 36h7" />
+            </g>
+          </g>
+          <g className="sold-pin">
+            <circle className="sold-pulse" cx="68" cy="13" r="5" />
+            <path d="M68 3.5a6 6 0 0 1 6 6c0 4.5-6 10.5-6 10.5s-6-6-6-10.5a6 6 0 0 1 6-6z" />
+            <circle className="sold-dot" cx="68" cy="9.5" r="2.1" />
+          </g>
+        </svg>
+      </span>
+      <span className="sold-text">
+        <b>
+          {sold.n} {sold.label}
+        </b>
+        <span>Entrega rastreável para todo o Brasil</span>
       </span>
     </div>
   );
@@ -423,9 +379,9 @@ export function Objections({ product }: { product: ProductContent }) {
             </span>
             <h3>{item.h}</h3>
             <p>{item.p}</p>
-            {item.pend && (
+            {item.fact && (
               <div className="proof">
-                <Pending>{item.pend}</Pending>
+                <Fact>{item.fact}</Fact>
               </div>
             )}
           </article>
@@ -506,7 +462,7 @@ export function Stats({ product }: { product: ProductContent }) {
                     <Sym name="flask" />
                     {item.src}
                     <span className="spec-more" aria-hidden="true">
-                      +
+                      <PlusIcon />
                     </span>
                   </span>
                 </button>
@@ -547,7 +503,10 @@ export function StudyCards({ product }: { product: ProductContent }) {
                 {study.pin}
               </span>
               <span className="study-open">
-                Ver ficha completa <span aria-hidden="true">+</span>
+                Ver ficha completa{" "}
+                <span aria-hidden="true">
+                  <PlusIcon />
+                </span>
               </span>
             </button>
           }
@@ -625,36 +584,62 @@ export function Comparison({ item }: { item: ProductContent["ba"][number] }) {
     </div>
   );
 }
-export function Reviews({ product, filter }: { product: ProductContent; filter: string }) {
+/** "2026-01-14" → "14/01/2026" */
+const dateBR = (iso: string) => iso.split("-").reverse().join("/");
+/** Iniciais do avatar: as duas primeiras palavras com mais de 2 letras. */
+const initials = (name: string) =>
+  name
+    .split(" ")
+    .filter((part) => part.length > 2)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("");
+export function Reviews({ product }: { product: ProductContent }) {
   return (
     <>
-      {[1, 2, 3].map((i) => (
-        <article className="rev rv" key={`${filter}-${i}`}>
-          <div className="ph">
-            Foto ou print real
-            <br />
-            do cliente {i}
-          </div>
-          <span className="stars empty">
-            {Array.from({ length: 5 }, (_, j) => (
-              <Sym name="star" key={j} />
+      {product.reviews.map((review) => (
+        <article
+          className={`rev rv ${review.photo ? "" : "rev-text-only"}`}
+          key={`${product.short}-${review.name}`}
+        >
+          {review.photo && (
+            <figure className="rev-photo">
+              <img
+                src={img(review.photo)}
+                alt={`Foto enviada por cliente: ${product.name}`}
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>
+                <Sym name="check" />
+                Foto real do cliente
+              </figcaption>
+            </figure>
+          )}
+          <Stars score={review.stars} />
+          {review.text &&
+            (review.summary ? (
+              <p className="rev-summary">{review.text}</p>
+            ) : (
+              <blockquote>“{review.text}”</blockquote>
             ))}
-          </span>
-          <blockquote>
-            Depoimento verdadeiro sobre o {product.short}, nas palavras do cliente.
-          </blockquote>
+          {review.source && (
+            <span className="rev-source">
+              {review.summary ? "Resumo da avaliação no" : "Avaliação no"} {review.source}
+            </span>
+          )}
           <div className="who">
-            <span className="av" />
+            <span className="av" aria-hidden="true">
+              {initials(review.name)}
+            </span>
             <div>
-              <b>Nome do cliente</b>
-              <span>Cidade · {filter === "Todas" ? "tipo de negócio" : filter}</span>
+              <b>{review.name}</b>
+              <span>
+                {review.city}, {review.uf} · {dateBR(review.date)}
+              </span>
             </div>
           </div>
-          <span className="verified">
-            <Sym name="shield" />
-            Verificação pendente
-          </span>
-          <Pending>depoimento real</Pending>
+          <Pending>Nome ilustrativo</Pending>
         </article>
       ))}
     </>
@@ -687,7 +672,7 @@ export function MechSteps({ steps }: { steps: { b: string; p: string }[] }) {
                 </span>
                 <b>{step.b}</b>
                 <span className="mech-more" aria-hidden="true">
-                  +
+                  <PlusIcon />
                 </span>
               </button>
             </PopoverTrigger>
