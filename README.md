@@ -108,7 +108,7 @@ Preenchido:
 - Ficha técnica (diluições, pH, superfícies, embalagens, validade) e guia de uso por ambiente.
 - Galerias de 1 L e 5 L do F5 e do galão do Lavix, fotos de cena das dúvidas e pares de antes e depois (marcados como comparação ilustrativa).
 - Selo "+ de 7 mil unidades vendidas" no topo e no título das avaliações.
-- Avaliações com foto: 4 do F5 e 6 do Lavix.
+- Avaliações com foto de clientes reais que compraram o produto: 4 do F5 e 6 do Lavix. Guarde a autorização (ou o link da avaliação pública) de cada cliente, porque nome, cidade e foto são dados pessoais (LGPD).
 - Selos verdes nas dúvidas (modo de uso e custo por litro na caixa com 6).
 - Tipografia em Montserrat em toda a página, inclusive nas ilustrações e no selo de garantia.
 
@@ -120,7 +120,7 @@ Pendente:
 - Preço da caixa de 5 L com 6 unidades não existe; os campos `cx6` de `PRICES_5L` ficam `null`.
 - A faixa do topo ainda diz "Modelo de referência"; remover antes de publicar.
 
-Antes de publicar, confirmar com o parceiro a origem do total de unidades vendidas, das avaliações (nomes, cidades e textos) e das fotos de clientes, e os prazos e condições comerciais. A prévia segue com `noindex` e `robots.txt` bloqueando tudo (isso não é controle de acesso). Não há checkout, pixel, analytics, WhatsApp nem coleta de dados.
+Antes de publicar, confirmar com o parceiro a origem do total de unidades vendidas e os prazos e condições comerciais. A prévia segue com `noindex` e `robots.txt` bloqueando tudo (isso não é controle de acesso). Não há checkout, pixel, analytics, WhatsApp nem coleta de dados.
 
 ## Continuidade local
 
