@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  CHECKOUT_RELEASE,
+  SKUS,
   checkoutForVolume,
   compareForVolume,
   discountPct,
@@ -17,7 +19,7 @@ import {
   type ProductId,
 } from "@/content/flotador";
 import { img, money } from "./format";
-import { getOfferReadiness } from "@/lib/offer";
+import { getOfferReadiness, withTracking } from "@/lib/offer";
 import {
   Sym,
   OfferCard,
@@ -81,16 +83,27 @@ export function PerolPage() {
   };
   const buy = (id: KitId) => {
     setKit(id);
+    const approved = CHECKOUT_RELEASE.approved;
+    const url = checkout[productId][id];
     const offer = getOfferReadiness({
       ...flotador,
+      status: approved ? "approved" : "draft",
+      product: {
+        ...flotador.product,
+        sku: SKUS[volume][productId][id] ?? null,
+        volumePerPackage: `${volume} L`,
+        unitsPerBox: kits.find((item) => item.id === id)?.n ?? null,
+      },
       offer: {
         ...flotador.offer,
         boxPriceCents: prices[productId][id],
-        purchaseUrl: checkout[productId][id],
+        purchaseUrl: url,
+        purchaseUrlApproved: approved,
+        commercialApproval: approved,
       },
     });
-    if (offer.enabled && checkout[productId][id]) {
-      window.location.assign(checkout[productId][id]!);
+    if (offer.enabled && url) {
+      window.location.assign(withTracking(url, window.location.search));
       return;
     }
     setToast("Compra ainda indisponível. Preços e condições deste kit estão pendentes.");

@@ -2,7 +2,15 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { PerolPage } from "@/components/perol/PerolPage";
-import { CHECKOUT, PRICES, PRICES_5L, PRODUCTS, discountPct } from "@/content/flotador";
+import {
+  CHECKOUT,
+  CHECKOUT_5L,
+  CHECKOUT_RELEASE,
+  PRICES,
+  PRICES_5L,
+  PRODUCTS,
+  discountPct,
+} from "@/content/flotador";
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
@@ -130,8 +138,10 @@ describe("Página importada do modelo Perol", () => {
   it("seleciona o kit da oferta final e bloqueia compra sem aprovação, mesmo com preço e URL", () => {
     const oldPrice = PRICES.f5.u2;
     const oldCheckout = CHECKOUT.f5.u2;
+    const oldApproved = CHECKOUT_RELEASE.approved;
     PRICES.f5.u2 = 10000;
     CHECKOUT.f5.u2 = "https://example.com/checkout";
+    CHECKOUT_RELEASE.approved = false;
     try {
       render(<PerolPage />);
       fireEvent.click(screen.getByRole("button", { name: "Comprar 2 unidades" }));
@@ -141,6 +151,22 @@ describe("Página importada do modelo Perol", () => {
     } finally {
       PRICES.f5.u2 = oldPrice;
       CHECKOUT.f5.u2 = oldCheckout;
+      CHECKOUT_RELEASE.approved = oldApproved;
+    }
+  });
+
+  it("todo kit com preço tem link de compra HTTPS do checkout", () => {
+    for (const [prices, links] of [
+      [PRICES, CHECKOUT],
+      [PRICES_5L, CHECKOUT_5L],
+    ] as const) {
+      for (const id of ["f5", "lx"] as const) {
+        for (const [kit, cents] of Object.entries(prices[id])) {
+          const url = links[id][kit as keyof (typeof links)["f5"]];
+          if (cents === null) expect(url).toBeNull();
+          else expect(url).toMatch(/^https:\/\/lp-brasil\.pay\.yampi\.com\.br\/r\/[A-Z0-9]+$/);
+        }
+      }
     }
   });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { flotador, type FlotadorConfig } from "@/content/flotador";
-import { formatBRL, getOfferReadiness, unitPriceCents } from "@/lib/offer";
+import { formatBRL, getOfferReadiness, unitPriceCents, withTracking } from "@/lib/offer";
 
 // Dados fictícios só para teste — nunca usados na página.
 const ready = (): FlotadorConfig => ({
@@ -62,6 +62,24 @@ describe("getOfferReadiness", () => {
     const c = ready();
     c.offer.purchaseUrlApproved = false;
     expect(getOfferReadiness(c).enabled).toBe(false);
+  });
+});
+
+describe("withTracking", () => {
+  const link = "https://exemplo.test/r/ABC";
+  it("repassa UTMs e fbclid da URL atual", () => {
+    const out = new URL(withTracking(link, "?utm_source=meta&utm_campaign=f5&fbclid=XYZ&outro=1"));
+    expect(out.searchParams.get("utm_source")).toBe("meta");
+    expect(out.searchParams.get("utm_campaign")).toBe("f5");
+    expect(out.searchParams.get("fbclid")).toBe("XYZ");
+    expect(out.searchParams.has("outro")).toBe(false);
+  });
+  it("mantém o link intacto sem parâmetros de campanha", () => {
+    expect(withTracking(link, "")).toBe(link);
+  });
+  it("não sobrescreve parâmetro que o link já traz", () => {
+    const out = new URL(withTracking(`${link}?utm_source=lp`, "?utm_source=meta"));
+    expect(out.searchParams.get("utm_source")).toBe("lp");
   });
 });
 
