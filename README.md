@@ -100,6 +100,7 @@ Outros pontos:
 - Um ambiente sem `envGuide` continua no carrossel, só não abre o guia.
 - Avaliação sem `photo` vira cartão só de texto; hoje todas têm foto. Com `summary: true` o texto aparece como resumo (sem aspas) e com a origem ("Resumo da avaliação no Magalu").
 - Os custos por litro citados nas dúvidas são calculados de `PRICES`; mudou o preço, o texto acompanha.
+- O rendimento do F5 no FAQ ("Quanto rende 1 litro?") é conta feita das diluições da ficha técnica (1:10 → 10 pulverizadores por litro de F5); a Perol não publica um número de rendimento. Mudou a diluição, ajuste esse texto à mão.
 - Todo kit com preço precisa de link HTTPS da Yampi em `CHECKOUT`/`CHECKOUT_5L` (um teste confere). Com `CHECKOUT_RELEASE.approved = false`, o botão volta a avisar que a compra está indisponível.
 
 ## Estado atual
@@ -119,7 +120,7 @@ Preenchido:
 Pendente:
 
 - Vendedor, CNPJ e canal de atendimento: a linha "Pendente" saiu do rodapé em 20/10/2026; volta quando houver os dados.
-- Dados de laudo citados no FAQ: rendimento por litro do F5 e teste de fixação do Lavix.
+- Dados citados no FAQ do Lavix: dose por kg de roupa e teste de fixação do perfume.
 - Preço da caixa de 5 L com 6 unidades não existe; os campos `cx6` de `PRICES_5L` e `CHECKOUT_5L` ficam `null`.
 
 Antes de publicar, confirmar com o parceiro a origem do total de unidades vendidas e os prazos e condições comerciais. A página segue com `noindex` e `robots.txt` bloqueando tudo (isso não é controle de acesso). O único destino externo é o checkout da Yampi; a página não tem pixel, analytics, WhatsApp nem coleta de dados.
