@@ -118,7 +118,7 @@ Preenchido:
 
 Pendente:
 
-- Vendedor, CNPJ e canal de atendimento no rodapé.
+- Vendedor, CNPJ e canal de atendimento: a linha "Pendente" saiu do rodapé em 20/10/2026; volta quando houver os dados.
 - Dados de laudo citados no FAQ: rendimento por litro do F5 e teste de fixação do Lavix.
 - Preço da caixa de 5 L com 6 unidades não existe; os campos `cx6` de `PRICES_5L` e `CHECKOUT_5L` ficam `null`.
 

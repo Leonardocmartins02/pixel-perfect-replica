@@ -949,9 +949,6 @@ export function PerolPage() {
             Publicidade. Revenda autorizada dos produtos Perol. Esta página não é a loja oficial da
             Perol. Leia atentamente o rótulo antes de usar o produto.
           </p>
-          <p>
-            Vendedor, CNPJ e atendimento: <span className="pend">dados da empresa vendedora</span>
-          </p>
         </div>
       </footer>
 
