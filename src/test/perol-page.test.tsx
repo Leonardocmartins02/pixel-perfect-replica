@@ -221,7 +221,7 @@ describe("Página importada do modelo Perol", () => {
     await user.keyboard("{Enter}");
     expect(question).toHaveAttribute("aria-expanded", "true");
     const answer = document.getElementById(question.getAttribute("aria-controls")!);
-    expect(answer).toHaveTextContent("rendimento por litro");
+    expect(answer).toHaveTextContent("1 litro de F5 rende 10 pulverizadores");
     await user.keyboard("{Enter}");
     expect(question).toHaveAttribute("aria-expanded", "false");
   });

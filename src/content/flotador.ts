@@ -832,7 +832,10 @@ export const PRODUCTS: Record<ProductId, ProductContent> = {
         q: "Precisa diluir?",
         a: "Sim, no pulverizador, por litro de água: 100 ml de F5 (1:10) para a limpeza diária, 200 ml (1:5) para limpeza leve e 500 ml (1:2) para limpeza pesada.",
       },
-      { q: "Quanto rende 1 litro?", p: "rendimento por litro" },
+      {
+        q: "Quanto rende 1 litro?",
+        a: "Depende da diluição. Na limpeza diária (1:10), 1 litro de F5 rende 10 pulverizadores: 100 ml de F5 em cada litro de água. Na limpeza leve (1:5) rende 5, com 200 ml por litro, e na limpeza pesada (1:2) rende 2, com 500 ml por litro.",
+      },
       {
         q: "Qual a validade?",
         a: "24 meses a partir da data de fabricação, guardado na embalagem original, em local seco e arejado.",

@@ -97,16 +97,16 @@ describe("Aplicações e FAQ", () => {
   });
 
   it("abre uma resposta de cada vez e identifica informações ainda pendentes", () => {
-    render(<ProductFaq product={PRODUCTS.f5} />);
-    const first = screen.getByRole("button", { name: "Onde posso usar o F5 Flotador?" });
-    const second = screen.getByRole("button", { name: "Quanto rende 1 litro?" });
+    render(<ProductFaq product={PRODUCTS.lx} />);
+    const first = screen.getByRole("button", { name: "Em quais tecidos posso usar?" });
+    const second = screen.getByRole("button", { name: "Quanto usar por lavagem?" });
     expect(first).toHaveAttribute("aria-expanded", "true");
     fireEvent.click(second);
     expect(first).toHaveAttribute("aria-expanded", "false");
     expect(second).toHaveAttribute("aria-expanded", "true");
     const answer = document.getElementById(second.getAttribute("aria-controls")!)!;
     expect(answer).toHaveTextContent("Pendente");
-    expect(answer).toHaveTextContent("Informação a confirmar: rendimento por litro.");
+    expect(answer).toHaveTextContent("Informação a confirmar: dose por kg de roupa.");
     fireEvent.click(second);
     expect(second).toHaveAttribute("aria-expanded", "false");
   });
