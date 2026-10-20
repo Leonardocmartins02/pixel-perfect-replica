@@ -4,7 +4,7 @@ Landing page de **F5 Flotador Universal** e **Lavix Finalizador**, da linha prof
 
 A versão atual é a **rodada de 14/10** (prévia `Prévia LP atualizado.zip`), já incorporada ao código-fonte: a página principal (`/`) mostra essa versão e continua editável.
 
-Os preços, prazos, garantia e meios de pagamento já aparecem na página, mas a **compra continua desligada**: sem link de checkout aprovado, o botão "Comprar" só avisa que a compra está indisponível.
+A **compra está ligada**: cada kit leva ao checkout da Yampi (loja LP - BRASIL, gateway Appmax), na mesma aba, repassando `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term` e `fbclid` da URL da página.
 
 ## Stack
 
@@ -76,6 +76,8 @@ Tudo que é conteúdo fica em `src/content/flotador.ts`:
 | Preço de cada kit, em centavos | `PRICES` (1 L) e `PRICES_5L` (5 L) |
 | Preço "de" riscado, que gera o selo de desconto | `COMPARE_PRICES` e `COMPARE_PRICES_5L` |
 | Link de compra de cada kit | `CHECKOUT` e `CHECKOUT_5L` |
+| Liga ou desliga a compra sem apagar os links | `CHECKOUT_RELEASE.approved` |
+| SKU de cada kit (igual ao cadastro na Yampi) | `SKUS` |
 | Prazos de entrega, pagamento e garantia | `SHIPPING`, `PAYMENT` e `GUARANTEE_DAYS` |
 | Fotos da galeria por volume | `gallery` (1 L) e `gallery5` (5 L) de cada produto |
 | Guia rápido de cada ambiente (dose, passos, kit indicado) | `envGuide` de cada produto |
@@ -87,7 +89,7 @@ Outros pontos:
 
 - Fotos: `public/img/`, sempre `.webp`, citadas pelo nome sem extensão. Avaliações usam `rev-f5-N` e `rev-lx-N`; a dúvida da entrega usa `entrega-caminhao`. As fotos `cliente-N` não são mais usadas na página.
 - Layout, fontes e animações: `src/styles.css` e `src/components/perol/`.
-- Regras de liberação da compra: `src/lib/offer.ts` (`getOfferReadiness`).
+- Regras de liberação da compra: `src/lib/offer.ts` (`getOfferReadiness`). O repasse dos parâmetros de campanha para o checkout fica em `withTracking`, no mesmo arquivo.
 
 ### Regras do conteúdo
 
@@ -98,6 +100,7 @@ Outros pontos:
 - Um ambiente sem `envGuide` continua no carrossel, só não abre o guia.
 - Avaliação sem `photo` vira cartão só de texto; hoje todas têm foto. Com `summary: true` o texto aparece como resumo (sem aspas) e com a origem ("Resumo da avaliação no Magalu").
 - Os custos por litro citados nas dúvidas são calculados de `PRICES`; mudou o preço, o texto acompanha.
+- Todo kit com preço precisa de link HTTPS da Yampi em `CHECKOUT`/`CHECKOUT_5L` (um teste confere). Com `CHECKOUT_RELEASE.approved = false`, o botão volta a avisar que a compra está indisponível.
 
 ## Estado atual
 
@@ -111,16 +114,15 @@ Preenchido:
 - Avaliações com foto de clientes reais que compraram o produto: 4 do F5 e 6 do Lavix. Guarde a autorização (ou o link da avaliação pública) de cada cliente, porque nome, cidade e foto são dados pessoais (LGPD).
 - Selos verdes nas dúvidas (modo de uso e custo por litro na caixa com 6).
 - Tipografia em Montserrat em toda a página, inclusive nas ilustrações e no selo de garantia.
+- Checkout Yampi nos 10 kits (F5 e Lavix, 1 L e 5 L), liberado em 19/10/2026; faixa "Modelo de referência" removida do topo.
 
 Pendente:
 
-- **Links de checkout**: todos `null`. Com link e preço, a compra ainda depende de `status: "approved"`, aprovação comercial, SKU, volume e unidades por caixa (`getOfferReadiness`).
 - Vendedor, CNPJ e canal de atendimento no rodapé.
 - Dados de laudo citados no FAQ: rendimento por litro do F5 e teste de fixação do Lavix.
-- Preço da caixa de 5 L com 6 unidades não existe; os campos `cx6` de `PRICES_5L` ficam `null`.
-- A faixa do topo ainda diz "Modelo de referência"; remover antes de publicar.
+- Preço da caixa de 5 L com 6 unidades não existe; os campos `cx6` de `PRICES_5L` e `CHECKOUT_5L` ficam `null`.
 
-Antes de publicar, confirmar com o parceiro a origem do total de unidades vendidas e os prazos e condições comerciais. A prévia segue com `noindex` e `robots.txt` bloqueando tudo (isso não é controle de acesso). Não há checkout, pixel, analytics, WhatsApp nem coleta de dados.
+Antes de publicar, confirmar com o parceiro a origem do total de unidades vendidas e os prazos e condições comerciais. A página segue com `noindex` e `robots.txt` bloqueando tudo (isso não é controle de acesso). O único destino externo é o checkout da Yampi; a página não tem pixel, analytics, WhatsApp nem coleta de dados.
 
 ## Continuidade local
 

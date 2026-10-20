@@ -32,6 +32,30 @@ export function isApprovedHttpsUrl(url: string | null, approved: boolean): boole
   }
 }
 
+/** Parâmetros de campanha repassados da LP para o checkout. */
+export const TRACKING_PARAMS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "fbclid",
+] as const;
+
+/**
+ * Copia os parâmetros de campanha da URL atual (`search`) para o link de compra,
+ * sem sobrescrever o que o link já traz.
+ */
+export function withTracking(url: string, search: string): string {
+  const target = new URL(url);
+  const current = new URLSearchParams(search);
+  for (const key of TRACKING_PARAMS) {
+    const value = current.get(key);
+    if (value && !target.searchParams.has(key)) target.searchParams.set(key, value);
+  }
+  return target.toString();
+}
+
 export interface OfferReadiness {
   enabled: boolean;
   missing: string[];

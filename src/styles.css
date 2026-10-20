@@ -561,14 +561,6 @@ p {
   border-radius: 50%;
   background: currentColor;
 }
-.draft {
-  background: var(--pend-bg);
-  color: var(--pend);
-  font: 500 12px/1.4 var(--mono);
-  text-align: center;
-  padding: 8px 16px;
-}
-
 /* ===== topo ===== */
 .promo {
   background: var(--navy-2);

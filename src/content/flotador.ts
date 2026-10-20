@@ -235,9 +235,35 @@ export const PRICES: Record<ProductId, Record<KitId, number | null>> = {
   f5: { u1: 3990, u2: 6990, cx6: 18497 },
   lx: { u1: 5990, u2: 10697, cx6: 24700 },
 };
+// Links de compra do checkout Yampi (loja LP - BRASIL), um produto por kit.
 export const CHECKOUT: Record<ProductId, Record<KitId, string | null>> = {
-  f5: { u1: null, u2: null, cx6: null },
-  lx: { u1: null, u2: null, cx6: null },
+  f5: {
+    u1: "https://lp-brasil.pay.yampi.com.br/r/JSQ5IH66OL",
+    u2: "https://lp-brasil.pay.yampi.com.br/r/BMLB0ON4PV",
+    cx6: "https://lp-brasil.pay.yampi.com.br/r/6GWFEREBIT",
+  },
+  lx: {
+    u1: "https://lp-brasil.pay.yampi.com.br/r/GC5SH5F4QJ",
+    u2: "https://lp-brasil.pay.yampi.com.br/r/M8UPEF5FBM",
+    cx6: "https://lp-brasil.pay.yampi.com.br/r/NUNQOJW71V",
+  },
+};
+/**
+ * Liberação comercial da compra na LP Perol (checkout Yampi + Appmax).
+ * Aprovada pelo dono da operação em 19/10/2026. Com `approved: false`,
+ * o botão volta a avisar que a compra está indisponível.
+ */
+export const CHECKOUT_RELEASE = { approved: true };
+// SKU de cada kit, igual ao cadastro na Yampi. No 5 L, `u2` é a caixa com 2 galões.
+export const SKUS: Record<Volume, Record<ProductId, Partial<Record<KitId, string>>>> = {
+  1: {
+    f5: { u1: "F5-1L-1UN", u2: "F5-1L-2UN", cx6: "F5-1L-CX6" },
+    lx: { u1: "LVX-1L-1UN", u2: "LVX-1L-2UN", cx6: "LVX-1L-CX6" },
+  },
+  5: {
+    f5: { u1: "F5-5L-1UN", u2: "F5-5L-CX2" },
+    lx: { u1: "LVX-5L-1UN", u2: "LVX-5L-CX2" },
+  },
 };
 export const SHIPPING = {
   paid: { label: "Frete pago + seguro de entrega", days: "3 a 8 dias" },
@@ -296,9 +322,18 @@ export const discountPct = (price: number | null, compare?: number) =>
   price !== null && compare && compare > price
     ? Math.floor(((compare - price) / compare) * 100)
     : 0;
+// No 5 L, `u2` é a caixa com 2 galões e não existe caixa com 6.
 export const CHECKOUT_5L: typeof CHECKOUT = {
-  f5: { u1: null, u2: null, cx6: null },
-  lx: { u1: null, u2: null, cx6: null },
+  f5: {
+    u1: "https://lp-brasil.pay.yampi.com.br/r/SBRST2YXPG",
+    u2: "https://lp-brasil.pay.yampi.com.br/r/C5XBUYVC4V",
+    cx6: null,
+  },
+  lx: {
+    u1: "https://lp-brasil.pay.yampi.com.br/r/A5TSVKH0YX",
+    u2: "https://lp-brasil.pay.yampi.com.br/r/NYGO4DO3GD",
+    cx6: null,
+  },
 };
 export const pricesForVolume = (volume: Volume) => (volume === 1 ? PRICES : PRICES_5L);
 export const checkoutForVolume = (volume: Volume) => (volume === 1 ? CHECKOUT : CHECKOUT_5L);
