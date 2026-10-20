@@ -419,10 +419,6 @@ export function PerolPage() {
         </symbol>
       </svg>
 
-      <div className="draft">
-        Modelo de referência · preços, laudos, depoimentos e logos marcados como <b>A DEFINIR</b>{" "}
-        entram com dados reais
-      </div>
       <div className="promo" aria-hidden="true">
         <div className="track" id="promo">
           {[...product.promo, ...product.promo, ...product.promo, ...product.promo].map(
